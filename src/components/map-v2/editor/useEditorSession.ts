@@ -109,8 +109,9 @@ export function useEditorSession(map: Map | null, editing: boolean) {
   const previewRef = useRef<EditorFeature | null>(null)
   const dragRef = useRef<DragState | null>(null)
   const suppressClickRef = useRef(false)
-  const clickTimerRef = useRef<number | null>(null)
   const mapRef = useRef(map)
+  const vertexPanLockRef = useRef(false)
+  const spacePanRef = useRef(false)
   const editingRef = useRef(editing)
   const toolRef = useRef(tool)
   const selectedIdRef = useRef(selectedId)
@@ -266,7 +267,8 @@ export function useEditorSession(map: Map | null, editing: boolean) {
       suppressClickRef.current = false
     }, 0)
     const currentMap = mapRef.current
-    if (currentMap) {
+    if (vertexPanLockRef.current && currentMap) {
+      vertexPanLockRef.current = false
       try {
         currentMap.dragPan.enable()
       } catch {
@@ -313,12 +315,21 @@ export function useEditorSession(map: Map | null, editing: boolean) {
     const canvas = map.getCanvas()
     const drawingTool = editing && (tool === 'path' || tool === 'polygon' || tool === 'point')
     canvas.style.cursor = drawingTool ? 'crosshair' : ''
-    if (editing && (tool === 'path' || tool === 'polygon')) map.doubleClickZoom.disable()
-    else map.doubleClickZoom.enable()
+    if (drawingTool) {
+      map.doubleClickZoom.disable()
+      map.boxZoom.disable()
+      if (!spacePanRef.current) map.dragPan.disable()
+    } else {
+      map.doubleClickZoom.enable()
+      map.boxZoom.enable()
+      map.dragPan.enable()
+    }
     return () => {
       canvas.style.cursor = ''
       try {
         map.doubleClickZoom.enable()
+        map.boxZoom.enable()
+        map.dragPan.enable()
       } catch {
         // The map may already be gone.
       }
@@ -346,9 +357,8 @@ export function useEditorSession(map: Map | null, editing: boolean) {
       }
       const currentTool = toolRef.current
       if (currentTool === 'path' || currentTool === 'polygon' || currentTool === 'point') {
-        const point: LngLat = [event.lngLat.lng, event.lngLat.lat]
-        if (clickTimerRef.current !== null) window.clearTimeout(clickTimerRef.current)
-        clickTimerRef.current = window.setTimeout(() => commandsRef.current.addPoint(point), 220)
+        if (spacePanRef.current) return
+        commandsRef.current.addPoint([event.lngLat.lng, event.lngLat.lat])
         return
       }
       const id = clickedFeatureId(event)
@@ -369,9 +379,33 @@ export function useEditorSession(map: Map | null, editing: boolean) {
     }
 
     const onDoubleClick = (event: MapMouseEvent) => {
-      if (toolRef.current !== 'path' && toolRef.current !== 'polygon') return
+      const currentTool = toolRef.current
+      if (currentTool !== 'path' && currentTool !== 'polygon' && currentTool !== 'point') return
       event.preventDefault()
-      if (clickTimerRef.current !== null) window.clearTimeout(clickTimerRef.current)
+      if (currentTool === 'point') {
+        commandsRef.current.saveDraft()
+        return
+      }
+      // The second click of this double-click already added a vertex. Drop it, and drop
+      // another when the first click landed on the previous vertex.
+      const points = draftRef.current
+      if (points.length > 0) {
+        const trimmed = points.slice(0, -1)
+        draftRef.current = trimmed
+        setDraftPoints(trimmed)
+      }
+      const remaining = draftRef.current
+      if (remaining.length >= 2) {
+        const last = map.project(remaining[remaining.length - 1])
+        const previous = map.project(remaining[remaining.length - 2])
+        const dx = last.x - previous.x
+        const dy = last.y - previous.y
+        if (dx * dx + dy * dy <= 64) {
+          const trimmed = remaining.slice(0, -1)
+          draftRef.current = trimmed
+          setDraftPoints(trimmed)
+        }
+      }
       commandsRef.current.saveDraft()
     }
 
@@ -392,6 +426,7 @@ export function useEditorSession(map: Map | null, editing: boolean) {
         geometry = inserted
       }
       suppressClickRef.current = true
+      vertexPanLockRef.current = true
       map.dragPan.disable()
       const preview: EditorFeature = { ...selected, geometry }
       dragRef.current = { id: selected.properties.id, vertexIndex, origin: selected }
@@ -414,10 +449,22 @@ export function useEditorSession(map: Map | null, editing: boolean) {
       paint()
     }
 
+    const drawingToolActive = () => toolRef.current === 'path' || toolRef.current === 'polygon' || toolRef.current === 'point'
+
     const onKey = (event: KeyboardEvent) => {
       const target = event.target
-      if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement) return
-      if (event.key === 'Enter' && (toolRef.current === 'path' || toolRef.current === 'polygon' || toolRef.current === 'point')) {
+      const typing = target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || target instanceof HTMLSelectElement
+      if (event.code === 'Space' && drawingToolActive() && !typing) {
+        event.preventDefault()
+        if (!event.repeat) {
+          spacePanRef.current = true
+          map.dragPan.enable()
+          map.getCanvas().style.cursor = 'grab'
+        }
+        return
+      }
+      if (typing) return
+      if (event.key === 'Enter' && drawingToolActive()) {
         event.preventDefault()
         commandsRef.current.saveDraft()
       }
@@ -440,6 +487,14 @@ export function useEditorSession(map: Map | null, editing: boolean) {
       }
     }
 
+    const onKeyUp = (event: KeyboardEvent) => {
+      if (event.code !== 'Space' || !spacePanRef.current) return
+      spacePanRef.current = false
+      if (!drawingToolActive()) return
+      map.dragPan.disable()
+      map.getCanvas().style.cursor = 'crosshair'
+    }
+
     const onPointerUp = () => commandsRef.current.finishDrag()
 
     map.on('click', onClick)
@@ -450,9 +505,9 @@ export function useEditorSession(map: Map | null, editing: boolean) {
     map.on('mouseup', onPointerUp)
     window.addEventListener('mouseup', onPointerUp)
     window.addEventListener('keydown', onKey)
+    window.addEventListener('keyup', onKeyUp)
 
     return () => {
-      if (clickTimerRef.current !== null) window.clearTimeout(clickTimerRef.current)
       map.off('click', onClick)
       map.off('dblclick', onDoubleClick)
       map.off('mousedown', 'editor-vertices', onVertexDown)
@@ -461,8 +516,11 @@ export function useEditorSession(map: Map | null, editing: boolean) {
       map.off('mouseup', onPointerUp)
       window.removeEventListener('mouseup', onPointerUp)
       window.removeEventListener('keydown', onKey)
+      window.removeEventListener('keyup', onKeyUp)
       dragRef.current = null
       previewRef.current = null
+      vertexPanLockRef.current = false
+      spacePanRef.current = false
       try {
         map.dragPan.enable()
       } catch {

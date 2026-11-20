@@ -28,12 +28,12 @@ export type EditorCategory = (typeof editorCategories)[number]['id']
 export type DrawGeometry = 'Point' | 'LineString' | 'Polygon'
 
 export const toolHints: Record<EditorTool, string> = {
-  select: 'Click a feature to inspect it.',
-  path: 'Click to add path points. Save when the path is finished.',
-  polygon: 'Click to add corners. Save to close the polygon.',
-  point: 'Click the map to place a point, then save it.',
-  edit: 'Drag vertices to reshape the selected feature. Click a small point to insert a vertex.',
-  delete: 'Click a feature to delete it from your local map.',
+  select: 'Click a feature to inspect it. The map stays free to pan and zoom.',
+  path: 'Click to add points. Finish, double-click, or Enter completes the path. Escape cancels. Hold Space to pan.',
+  polygon: 'Click to add corners. Finish, double-click, or Enter closes the polygon. Escape cancels. Hold Space to pan.',
+  point: 'Click to place a point, then Finish. Escape cancels. Hold Space to pan.',
+  edit: 'Drag a handle to move it. Click a small handle to insert a vertex.',
+  delete: 'Click a feature, then confirm. OpenStreetMap files are not changed.',
 }
 
 export const accessTypes = ['public', 'private', 'permissive', 'customers', 'destination'] as const
