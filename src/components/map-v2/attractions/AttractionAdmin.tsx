@@ -9,6 +9,7 @@ import {
   resetAttractions,
   updateAttraction,
   assignAttractionGeometry,
+  attractionsUsingSource,
 } from '@/attractions/store'
 import { setCandidateHighlight } from '@/attractions/candidates'
 import { downloadJson } from '@/map-v2/editor/document'
@@ -345,7 +346,9 @@ function Confirm({
 function geometryLabel(attraction: AttractionRecord): string {
   if (attraction.geometryOrigin === 'osm') {
     const edited = attraction.lastEdited ? ` · ${new Date(attraction.lastEdited).toLocaleString()}` : ''
-    return attraction.geometry ? `Linked · ${attraction.sourceFeatureId}${edited}` : `Linked · ${attraction.sourceFeatureId} is missing from the dataset`
+    const shared = attractionsUsingSource(attraction.sourceFeatureId ?? '').filter((item) => item.id !== attraction.id)
+    const sharedWith = shared.length > 0 ? ` · shared with ${shared.map((item) => item.name).join(', ')}` : ''
+    return attraction.geometry ? `Linked · ${attraction.sourceFeatureId}${sharedWith}${edited}` : `Linked · ${attraction.sourceFeatureId} is missing from the dataset`
   }
   if (attraction.geometryOrigin === 'manual' && attraction.geometry) {
     const edited = attraction.lastEdited ? ` · ${new Date(attraction.lastEdited).toLocaleString()}` : ''

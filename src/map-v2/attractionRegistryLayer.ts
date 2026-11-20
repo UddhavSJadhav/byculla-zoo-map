@@ -1,5 +1,6 @@
 import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, Position } from 'geojson'
 import type { GeoJSONSource, LayerSpecification, Map } from 'maplibre-gl'
+import { geometryForFeature, geometryForSource } from '@/attractions/candidates'
 import type { AttractionGeometry, AttractionRecord } from '@/attractions/types'
 import { featureIdForAttraction } from '@/attractions/store'
 
@@ -36,29 +37,48 @@ export function syncCandidateHighlight(map: Map, geometry: AttractionGeometry | 
 
 function collectionFor(attractions: AttractionRecord[]): FeatureCollection<Geometry, GeoJsonProperties> {
   const features: Feature<Geometry, GeoJsonProperties>[] = []
+  const shared: Record<string, AttractionRecord[]> = {}
   for (const attraction of attractions) {
     if (!attraction.geometry) continue
-    const properties = {
-      id: featureIdForAttraction(attraction.id),
-      attractionId: attraction.id,
-      name: attraction.name,
-      exhibitNumber: attraction.exhibitNumber,
-      origin: attraction.geometryOrigin ?? 'manual',
-      sourceFeatureId: attraction.sourceFeatureId,
-      anchor: attraction.geometry.type === 'Point' ? 'point' : 'area',
+    if (attraction.geometryOrigin === 'osm' && attraction.sourceFeatureId) {
+      const group = shared[attraction.sourceFeatureId] ?? []
+      group.push(attraction)
+      shared[attraction.sourceFeatureId] = group
+      continue
     }
-    features.push({ type: 'Feature', id: properties.id, geometry: attraction.geometry, properties })
-    if (attraction.geometry.type === 'Polygon') {
-      const center = ringCenter(attraction.geometry.coordinates[0] ?? [])
-      if (!center) continue
-      features.push({
-        type: 'Feature',
-        properties: { ...properties, anchor: 'label' },
-        geometry: { type: 'Point', coordinates: center },
-      })
-    }
+    features.push(...featuresFor([attraction], attraction.geometry, featureIdForAttraction(attraction.id)))
+  }
+  for (const [sourceId, group] of Object.entries(shared)) {
+    const sample = group[0]
+    const geometry = (sample?.osmFeatureId ? geometryForFeature(sample.osmFeatureId) : null) ?? geometryForSource(sourceId) ?? sample?.geometry ?? null
+    if (!sample || !geometry) continue
+    features.push(...featuresFor(group, geometry, featureIdForAttraction(sample.id)))
   }
   return { type: 'FeatureCollection', features }
+}
+
+function featuresFor(group: AttractionRecord[], geometry: AttractionGeometry, id: string): Feature<Geometry, GeoJsonProperties>[] {
+  const sorted = [...group].sort((left, right) => left.exhibitNumber - right.exhibitNumber)
+  const first = sorted[0]
+  if (!first) return []
+  const label = sorted.map((attraction) => `${attraction.exhibitNumber}. ${attraction.name}`).join('\n')
+  const properties = {
+    id,
+    attractionId: first.id,
+    attractionIds: sorted.map((attraction) => attraction.id).join(','),
+    name: label,
+    exhibitNumber: first.exhibitNumber,
+    origin: first.geometryOrigin ?? 'manual',
+    sourceFeatureId: first.sourceFeatureId,
+    anchor: geometry.type === 'Point' ? 'point' : 'area',
+    label,
+  }
+  const features: Feature<Geometry, GeoJsonProperties>[] = [{ type: 'Feature', id, geometry, properties }]
+  if (geometry.type === 'Polygon') {
+    const center = ringCenter(geometry.coordinates[0] ?? [])
+    if (center) features.push({ type: 'Feature', properties: { ...properties, anchor: 'label' }, geometry: { type: 'Point', coordinates: center } })
+  }
+  return features
 }
 
 function ringCenter(ring: Position[]): [number, number] | null {
@@ -117,7 +137,7 @@ const registryLayers = [
     source: 'attraction-registry',
     filter: ['==', ['geometry-type'], 'Point'],
     layout: {
-      'text-field': ['concat', ['to-string', ['get', 'exhibitNumber']], '. ', ['get', 'name']],
+      'text-field': ['get', 'label'],
       'text-font': ['Noto Sans Regular'],
       'text-size': 13,
       'text-anchor': 'top',

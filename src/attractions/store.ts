@@ -147,6 +147,10 @@ export function assignAttractionGeometry(id: string, geometry: AttractionGeometr
   return null
 }
 
+export function attractionsUsingSource(sourceId: string): AttractionRecord[] {
+  return listAttractions().filter((attraction) => attraction.geometryOrigin === 'osm' && attraction.sourceFeatureId === sourceId)
+}
+
 export function acceptOsmCandidate(id: string, sourceId: string): string | null {
   const candidate = candidateBySource(id, sourceId)
   if (!candidate) return 'That OpenStreetMap feature is not a candidate for this exhibit.'
@@ -180,6 +184,25 @@ export function rejectOsmCandidate(id: string, sourceId: string): string | null 
     override.lastEdited = new Date().toISOString()
   }
   commitOverride(next, id, override)
+  writeStore(next)
+  return null
+}
+
+export function rejectSharedSource(sourceId: string): string | null {
+  const linked = attractionsUsingSource(sourceId)
+  if (linked.length === 0) return 'No attraction is linked to that feature.'
+  const next = { ...readStore().overrides }
+  for (const attraction of linked) {
+    const override: AttractionOverride = { ...next[attraction.id] }
+    override.rejectedSourceIds = [...new Set([...(override.rejectedSourceIds ?? attraction.rejectedSourceIds), sourceId])]
+    override.geometry = null
+    override.geometryOrigin = null
+    override.sourceFeatureId = null
+    override.osmFeatureId = null
+    override.osmLayer = null
+    override.lastEdited = new Date().toISOString()
+    commitOverride(next, attraction.id, override)
+  }
   writeStore(next)
   return null
 }
@@ -252,7 +275,7 @@ export function exportAttractionCollection(): FeatureCollection<Geometry | null>
     features: listAttractions().map((attraction) => ({
       type: 'Feature' as const,
       id: attraction.id,
-      geometry: attraction.geometry,
+      geometry: attraction.geometryOrigin === 'osm' ? null : attraction.geometry,
       properties: {
         id: attraction.id,
         name: attraction.name,
