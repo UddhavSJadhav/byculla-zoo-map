@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+}
+
+.leaflet-container img {
+  max-width: none;
+  max-height: none;
+}
+
+.illustrated-map.leaflet-container {
+  background: #e7e5e4;
+}
+
+.calibration-select.leaflet-container {
+  cursor: crosshair;
+}
+
+.calibration-page .leaflet-bottom.leaflet-right {
+  margin-bottom: calc(42vh + 1.5rem + env(safe-area-inset-bottom));
+}
+
+.leaflet-bottom.leaflet-right {
+  margin-bottom: calc(11.5rem + env(safe-area-inset-bottom));
+}
+
+.map-v2 .maplibregl-ctrl-top-left {
+  top: 7.5rem;
+  left: 0.25rem;
+}
+
+.map-v2-editing .maplibregl-ctrl-top-left {
+  top: 12.25rem;
+}
+
+.map-v2 .maplibregl-ctrl-bottom-right {
+  bottom: 4.5rem;
+}
+
+.map-v2 .maplibregl-ctrl-attrib {
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.user-location-icon {
+  background: transparent;
+  border: none;
+}
+
+.user-location-marker {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  pointer-events: none;
+}
+
+.user-location-heading {
+  position: absolute;
+  inset: 0;
+  width: 64px;
+  height: 64px;
+  transform-origin: 32px 32px;
+}
+
+.user-location-dot {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 16px;
+  height: 16px;
+  margin-top: -8px;
+  margin-left: -8px;
+  border: 2px solid #fff;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.12), 0 1px 4px rgba(15, 23, 42, 0.28);
+}

@@ -1,0 +1,89 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "way-1453880222",
+      "properties": {
+        "id": "way-1453880222",
+        "name": "Elephant Enclosure",
+        "category": "animal-enclosure",
+        "source": "OpenStreetMap",
+        "sourceId": "way/1453880222",
+        "leisure": "park"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.8355187,
+              18.9802575
+            ],
+            [
+              72.8361701,
+              18.9801749
+            ],
+            [
+              72.8360327,
+              18.9795776
+            ],
+            [
+              72.8354447,
+              18.9796808
+            ],
+            [
+              72.8355187,
+              18.9802575
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "manual-872255c1-6487-43ce-9f4d-ee3d78811c58",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.83534022943428,
+              18.977981196837547
+            ],
+            [
+              72.83557132439108,
+              18.97791095392091
+            ],
+            [
+              72.83568136960915,
+              18.978051439724595
+            ],
+            [
+              72.83580241934777,
+              18.978113877821286
+            ],
+            [
+              72.83566486282598,
+              18.978251761868307
+            ],
+            [
+              72.83534022943428,
+              18.977981196837547
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "manual-872255c1-6487-43ce-9f4d-ee3d78811c58",
+        "name": "Crocodile Lake",
+        "category": "animal-enclosure",
+        "source": "Manual",
+        "sourceId": "manual/manual-872255c1-6487-43ce-9f4d-ee3d78811c58",
+        "editorOrigin": "manual",
+        "editorCategory": "animal-enclosure",
+        "description": ""
+      }
+    }
+  ]
+}
