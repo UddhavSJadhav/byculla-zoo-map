@@ -6,6 +6,10 @@ import { composeAdded, composeLayer } from '@/map-v2/editor/document'
 import type { DrawGeometry, EditorDocument, EditorFeature, EditorProperties } from '@/map-v2/editor/types'
 
 export const selectableLayerIds = [
+  'registry-attraction-fill',
+  'registry-attraction-line',
+  'registry-attraction-circle',
+  'registry-attraction-label',
   'editor-tree-target',
   'editor-water-target',
   'zoo-added-circle',

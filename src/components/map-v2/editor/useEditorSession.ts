@@ -37,6 +37,16 @@ import {
 } from '@/map-v2/editor/geometry'
 import { paintMap, selectableLayerIds, vertexFeatures } from '@/map-v2/editor/render'
 import {
+  assignAttractionGeometry,
+  attractionIdFromFeature,
+  featureIdForAttraction,
+  getAttraction,
+  getMappingRequest,
+  subscribeAttractionMapping,
+  subscribeAttractions,
+  toEditorFeature,
+} from '@/attractions/store'
+import {
   editorCategories,
   type DrawGeometry,
   type EditorCategory,
@@ -87,6 +97,14 @@ function featureLabel(feature: EditorFeature): string {
   return feature.properties.name?.trim() || feature.properties.id || 'Unnamed feature'
 }
 
+function resolveEditorFeature(source: EditorDocument, id: string | null): EditorFeature | null {
+  if (!id) return null
+  const attractionId = attractionIdFromFeature(id)
+  if (!attractionId) return resolveFeature(source, id)
+  const attraction = getAttraction(attractionId)
+  return attraction ? toEditorFeature(attraction) : null
+}
+
 export function useEditorSession(map: Map | null, editing: boolean) {
   const [tool, setTool] = useState<EditorTool>('select')
   const [document, setDocument] = useState<EditorDocument>(loadEditorDocument)
@@ -103,6 +121,10 @@ export function useEditorSession(map: Map | null, editing: boolean) {
   const [savedAt, setSavedAt] = useState<number | null>(null)
   const [activeVertex, setActiveVertex] = useState<number | null>(null)
   const [dataset, setDataset] = useState<MapLayerId | 'added'>('paths')
+  const [mappingAttractionId, setMappingAttractionId] = useState<string | null>(null)
+  const [appliedMapToken, setAppliedMapToken] = useState(0)
+  const [attractionRevision, setAttractionRevision] = useState(0)
+  const [mappingTick, setMappingTick] = useState(0)
 
   const documentRef = useRef(document)
   const draftRef = useRef(draftPoints)
@@ -118,9 +140,31 @@ export function useEditorSession(map: Map | null, editing: boolean) {
   const activeVertexRef = useRef(activeVertex)
   const formRef = useRef(form)
   const baselineRef = useRef(baseline)
+  const mappingIdRef = useRef<string | null>(null)
+
+  const pendingMap = editing ? getMappingRequest() : null
+  if (pendingMap && pendingMap.token !== appliedMapToken) {
+    const nextTool: EditorTool = pendingMap.mode === 'edit' ? 'edit' : pendingMap.mode
+    const values = emptyForm(defaultCategory(nextTool))
+    setAppliedMapToken(pendingMap.token)
+    setTool(nextTool)
+    setMappingAttractionId(pendingMap.attractionId)
+    setDraftPoints([])
+    setPendingDelete(null)
+    if (pendingMap.mode === 'edit') setSelectedId(featureIdForAttraction(pendingMap.attractionId))
+    else {
+      setSelectedId(null)
+      setForm(values)
+      setBaseline(values)
+    }
+  }
+  void mappingTick
 
   const dirty = !formsEqual(form, baseline)
-  const selected = selectedId ? resolveFeature(document, selectedId) : null
+  const selected = resolveEditorFeature(document, selectedId)
+  const mappingAttraction = mappingAttractionId ? getAttraction(mappingAttractionId) : null
+  const selectedAttractionId = selected ? attractionIdFromFeature(selected.properties.id) : null
+  const selectedAttraction = selectedAttractionId ? getAttraction(selectedAttractionId) : null
   const draftKind = toolGeometry(tool)
   const drawing = draftKind !== null && draftPoints.length > 0
 
@@ -128,7 +172,7 @@ export function useEditorSession(map: Map | null, editing: boolean) {
     const currentMap = mapRef.current
     if (!currentMap) return
     const currentId = selectedIdRef.current
-    const selection = currentId ? resolveFeature(documentRef.current, currentId) : null
+    const selection = resolveEditorFeature(documentRef.current, currentId)
     try {
       paintMap(currentMap, {
         document: documentRef.current,
@@ -166,7 +210,7 @@ export function useEditorSession(map: Map | null, editing: boolean) {
     activeVertexRef.current = null
     setPendingDelete(null)
     if (!id) return
-    const feature = resolveFeature(documentRef.current, id)
+    const feature = resolveEditorFeature(documentRef.current, id)
     if (!feature) return
     const values = formFromFeature(feature)
     setForm(values)
@@ -186,6 +230,28 @@ export function useEditorSession(map: Map | null, editing: boolean) {
       return
     }
     const geometry = kind === 'Point' ? pointGeometry(points[0]) : kind === 'LineString' ? lineGeometry(points) : polygonGeometry(points)
+    const mappingId = mappingIdRef.current
+    if (mappingId) {
+      if (geometry.type !== 'Point' && geometry.type !== 'Polygon') {
+        setMessage('This attraction needs a point or a polygon.')
+        return
+      }
+      const geometryError = assignAttractionGeometry(mappingId, geometry)
+      if (geometryError) {
+        setMessage(geometryError)
+        return
+      }
+      draftRef.current = []
+      setDraftPoints([])
+      mappingIdRef.current = null
+      setMappingAttractionId(null)
+      setTool('select')
+      toolRef.current = 'select'
+      select(featureIdForAttraction(mappingId))
+      const saved = getAttraction(mappingId)
+      setMessage(saved ? `Saved the shape for ${saved.exhibitNumber}. ${saved.name}.` : 'Saved the attraction shape locally.')
+      return
+    }
     const built = buildManualFeature(formRef.current, geometry)
     if ('error' in built) {
       setMessage(built.error)
@@ -207,7 +273,11 @@ export function useEditorSession(map: Map | null, editing: boolean) {
 
   const saveProperties = () => {
     if (!selectedIdRef.current) return
-    const current = resolveFeature(documentRef.current, selectedIdRef.current)
+    if (attractionIdFromFeature(selectedIdRef.current)) {
+      setMessage('Change this exhibit in Attractions. The shape stays with the attraction.')
+      return
+    }
+    const current = resolveEditorFeature(documentRef.current, selectedIdRef.current)
     if (!current) return
     const nextId = formRef.current.id.trim()
     const conflict = idConflict(documentRef.current, nextId, current.properties.id)
@@ -239,7 +309,7 @@ export function useEditorSession(map: Map | null, editing: boolean) {
   }
 
   const requestDelete = (id: string) => {
-    const feature = resolveFeature(documentRef.current, id)
+    const feature = resolveEditorFeature(documentRef.current, id)
     if (!feature) return
     if (dirty && id !== selectedIdRef.current) {
       setMessage('Save or revert properties before deleting another feature.')
@@ -251,6 +321,16 @@ export function useEditorSession(map: Map | null, editing: boolean) {
 
   const confirmDelete = () => {
     if (!pendingDelete) return
+    const attractionId = attractionIdFromFeature(pendingDelete.id)
+    if (attractionId) {
+      assignAttractionGeometry(attractionId, null)
+      setPendingDelete(null)
+      setSelectedId(null)
+      selectedIdRef.current = null
+      setMessage('Removed the shape from this attraction. The exhibit stays in the inventory.')
+      paint()
+      return
+    }
     const next = deleteFromDocument(documentRef.current, pendingDelete.id)
     setPendingDelete(null)
     setSelectedId(null)
@@ -276,6 +356,23 @@ export function useEditorSession(map: Map | null, editing: boolean) {
       }
     }
     if (!drag || !preview) return
+    const draggedAttractionId = attractionIdFromFeature(drag.id)
+    if (draggedAttractionId) {
+      const sameShape = JSON.stringify(drag.origin.geometry) === JSON.stringify(preview.geometry)
+      if (sameShape) {
+        paint()
+        return
+      }
+      if (preview.geometry.type !== 'Point' && preview.geometry.type !== 'Polygon') {
+        setMessage('Use a point or a polygon for an attraction.')
+        paint()
+        return
+      }
+      const geometryError = assignAttractionGeometry(draggedAttractionId, preview.geometry)
+      setMessage(geometryError ?? 'Saved the attraction shape locally.')
+      paint()
+      return
+    }
     const unchanged = JSON.stringify(drag.origin.geometry) === JSON.stringify(preview.geometry)
     const stored = documentRef.current.features.some((feature) => featureId(feature) === drag.id)
     if (unchanged && !stored) {
@@ -303,12 +400,16 @@ export function useEditorSession(map: Map | null, editing: boolean) {
     activeVertexRef.current = activeVertex
     formRef.current = form
     baselineRef.current = baseline
+    mappingIdRef.current = mappingAttractionId
     commandsRef.current = { addPoint, saveDraft, select, requestDelete, finishDrag, saveProperties }
   })
 
   useEffect(() => {
     paint()
-  }, [map, editing, document, selectedId, draftPoints, tool, activeVertex])
+  }, [map, editing, document, selectedId, draftPoints, tool, activeVertex, attractionRevision])
+
+  useEffect(() => subscribeAttractions(() => setAttractionRevision((current) => current + 1)), [])
+  useEffect(() => subscribeAttractionMapping(() => setMappingTick((current) => current + 1)), [])
 
   useEffect(() => {
     if (!map) return
@@ -413,7 +514,7 @@ export function useEditorSession(map: Map | null, editing: boolean) {
       if (toolRef.current !== 'edit') return
       event.preventDefault()
       const properties = event.features?.[0]?.properties
-      const selected = selectedIdRef.current ? resolveFeature(documentRef.current, selectedIdRef.current) : null
+      const selected = resolveEditorFeature(documentRef.current, selectedIdRef.current)
       if (dragRef.current || !selected || !properties) return
       const vertexIndex = Number(properties.vertexIndex)
       if (!Number.isInteger(vertexIndex)) return
@@ -476,9 +577,11 @@ export function useEditorSession(map: Map | null, editing: boolean) {
         paint()
       }
       if (event.key === 'Escape') {
-        if (draftRef.current.length > 0) {
+        if (draftRef.current.length > 0 || mappingIdRef.current) {
           draftRef.current = []
           setDraftPoints([])
+          mappingIdRef.current = null
+          setMappingAttractionId(null)
           setMessage('Drawing cancelled.')
           paint()
           return
@@ -535,6 +638,8 @@ export function useEditorSession(map: Map | null, editing: boolean) {
       setDraftPoints([])
       setMessage('Drawing cancelled.')
     }
+    mappingIdRef.current = null
+    setMappingAttractionId(null)
     setTool(next)
     toolRef.current = next
     setPendingDelete(null)
@@ -567,6 +672,8 @@ export function useEditorSession(map: Map | null, editing: boolean) {
   const cancelDrawing = () => {
     draftRef.current = []
     setDraftPoints([])
+    mappingIdRef.current = null
+    setMappingAttractionId(null)
     setMessage('Drawing cancelled.')
     paint()
   }
@@ -588,6 +695,17 @@ export function useEditorSession(map: Map | null, editing: boolean) {
     }
     setActiveVertex(null)
     activeVertexRef.current = null
+    const attractionId = attractionIdFromFeature(selected.properties.id)
+    if (attractionId) {
+      if (geometry.type !== 'Point' && geometry.type !== 'Polygon') {
+        setMessage('Use a point or a polygon for an attraction.')
+        return
+      }
+      const savedError = assignAttractionGeometry(attractionId, geometry)
+      setMessage(savedError ?? 'Saved the attraction shape locally.')
+      paint()
+      return
+    }
     commit(adoptFeature(documentRef.current, { ...selected, geometry }), 'Saved locally.')
   }
 
@@ -680,6 +798,8 @@ export function useEditorSession(map: Map | null, editing: boolean) {
     updateForm,
     dirty,
     selected,
+    mappingAttraction,
+    selectedAttraction,
     origin,
     draftPoints,
     draftKind,

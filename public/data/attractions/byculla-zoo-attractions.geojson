@@ -1,0 +1,980 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "exhibit-1",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.834779,
+              18.9784093
+            ],
+            [
+              72.8348091,
+              18.9784348
+            ],
+            [
+              72.8348748,
+              18.9784759
+            ],
+            [
+              72.8349458,
+              18.9785082
+            ],
+            [
+              72.8350629,
+              18.9782972
+            ],
+            [
+              72.8349748,
+              18.9782535
+            ],
+            [
+              72.8349034,
+              18.978188
+            ],
+            [
+              72.8348546,
+              18.9781061
+            ],
+            [
+              72.8348323,
+              18.9780144
+            ],
+            [
+              72.8348384,
+              18.9779205
+            ],
+            [
+              72.8345904,
+              18.9779065
+            ],
+            [
+              72.8345822,
+              18.9779806
+            ],
+            [
+              72.8345848,
+              18.9780551
+            ],
+            [
+              72.8346008,
+              18.9781321
+            ],
+            [
+              72.8344554,
+              18.9781965
+            ],
+            [
+              72.834545,
+              18.9783759
+            ],
+            [
+              72.8346539,
+              18.9783273
+            ],
+            [
+              72.8346784,
+              18.9783164
+            ],
+            [
+              72.8347246,
+              18.9783668
+            ],
+            [
+              72.834779,
+              18.9784093
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-1",
+        "name": "Aqua Birds",
+        "exhibitNumber": 1,
+        "category": "birds",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "osm",
+        "sourceFeatureId": "way/1052761696",
+        "osmFeatureId": "attraction-1052761696",
+        "osmLayer": "attractions",
+        "lastEdited": "2026-11-20T11:24:03.490Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-2",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.8352691,
+              18.9777083
+            ],
+            [
+              72.8354247,
+              18.9777314
+            ],
+            [
+              72.8354374,
+              18.9776552
+            ],
+            [
+              72.8352818,
+              18.9776321
+            ],
+            [
+              72.8352691,
+              18.9777083
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-2",
+        "name": "Otter",
+        "exhibitNumber": 2,
+        "category": "animal",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "osm",
+        "sourceFeatureId": "way/1006878423",
+        "osmFeatureId": "attraction-1006878423",
+        "osmLayer": "attractions",
+        "lastEdited": "2026-11-20T11:24:32.106Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-3",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.83534039637138,
+              18.977986843882576
+            ],
+            [
+              72.83566111577375,
+              18.97825120548157
+            ],
+            [
+              72.8358051822419,
+              18.97811497010892
+            ],
+            [
+              72.83567998162022,
+              18.97805333978468
+            ],
+            [
+              72.83556678653767,
+              18.977910616841527
+            ],
+            [
+              72.83534039637138,
+              18.977986843882576
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-3",
+        "name": "Crocodile",
+        "exhibitNumber": 3,
+        "category": "animal",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "manual",
+        "sourceFeatureId": null,
+        "osmFeatureId": null,
+        "osmLayer": null,
+        "lastEdited": "2026-11-20T11:28:12.426Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-4",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.83561893419787,
+              18.97779332145234
+            ],
+            [
+              72.83567371529506,
+              18.97791363910791
+            ],
+            [
+              72.83595645644158,
+              18.97772313611398
+            ],
+            [
+              72.83586456556918,
+              18.97764292426156
+            ],
+            [
+              72.83561893419787,
+              18.97779332145234
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-4",
+        "name": "Butterfly Garden",
+        "exhibitNumber": 4,
+        "category": "garden",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "manual",
+        "sourceFeatureId": null,
+        "osmFeatureId": null,
+        "osmLayer": null,
+        "lastEdited": "2026-11-20T11:31:19.478Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-5",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.8360508,
+              18.9780363
+            ],
+            [
+              72.8360028,
+              18.977995
+            ],
+            [
+              72.8360491,
+              18.9779468
+            ],
+            [
+              72.8361062,
+              18.9778873
+            ],
+            [
+              72.8361543,
+              18.9779286
+            ],
+            [
+              72.8360508,
+              18.9780363
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-5",
+        "name": "Turtle",
+        "exhibitNumber": 5,
+        "category": "animal",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "osm",
+        "sourceFeatureId": "way/1006878574",
+        "osmFeatureId": "attraction-1006878574",
+        "osmLayer": "attractions",
+        "lastEdited": "2026-11-20T11:24:52.790Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-6",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.8364109,
+              18.9777322
+            ],
+            [
+              72.8363658,
+              18.9776447
+            ],
+            [
+              72.8363443,
+              18.9776028
+            ],
+            [
+              72.8362177,
+              18.9775905
+            ],
+            [
+              72.8361227,
+              18.9776816
+            ],
+            [
+              72.8361629,
+              18.9777191
+            ],
+            [
+              72.8362285,
+              18.9776562
+            ],
+            [
+              72.8362501,
+              18.977698
+            ],
+            [
+              72.8363282,
+              18.9778498
+            ],
+            [
+              72.8365171,
+              18.9778682
+            ],
+            [
+              72.8366259,
+              18.9777639
+            ],
+            [
+              72.8365217,
+              18.9776667
+            ],
+            [
+              72.8364494,
+              18.977736
+            ],
+            [
+              72.8364109,
+              18.9777322
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-6",
+        "name": "Birds Paradise",
+        "exhibitNumber": 6,
+        "category": "birds",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "osm",
+        "sourceFeatureId": "way/1006878421",
+        "osmFeatureId": "attraction-1006878421",
+        "osmLayer": "attractions",
+        "lastEdited": "2026-11-20T11:25:03.056Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-7",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.83737026143226,
+              18.978036025045625
+            ],
+            [
+              72.83729243403354,
+              18.97730221844897
+            ],
+            [
+              72.83759229842477,
+              18.977248102789787
+            ],
+            [
+              72.83772506281323,
+              18.977696179914673
+            ],
+            [
+              72.83765868061977,
+              18.977724319983295
+            ],
+            [
+              72.83760603267297,
+              18.97778276472698
+            ],
+            [
+              72.8375648299315,
+              18.977849867925954
+            ],
+            [
+              72.8375510956848,
+              18.97791913571612
+            ],
+            [
+              72.83755796280738,
+              18.9779862388595
+            ],
+            [
+              72.83737026143226,
+              18.978036025045625
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-7",
+        "name": "Biome Park",
+        "exhibitNumber": 7,
+        "category": "habitat",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "manual",
+        "sourceFeatureId": null,
+        "osmFeatureId": null,
+        "osmLayer": null,
+        "lastEdited": "2026-11-20T11:32:45.821Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-8",
+      "geometry": null,
+      "properties": {
+        "id": "exhibit-8",
+        "name": "Amphitheatre",
+        "exhibitNumber": 8,
+        "category": "venue",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": null,
+        "sourceFeatureId": null,
+        "osmFeatureId": null,
+        "osmLayer": null,
+        "lastEdited": null,
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-9",
+      "geometry": null,
+      "properties": {
+        "id": "exhibit-9",
+        "name": "Auditorium",
+        "exhibitNumber": 9,
+        "category": "venue",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": null,
+        "sourceFeatureId": null,
+        "osmFeatureId": null,
+        "osmLayer": null,
+        "lastEdited": null,
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-10",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.8370111,
+              18.9762337
+            ],
+            [
+              72.8370744,
+              18.9766617
+            ],
+            [
+              72.8370977,
+              18.9766586
+            ],
+            [
+              72.8371296,
+              18.9768743
+            ],
+            [
+              72.8374618,
+              18.9768304
+            ],
+            [
+              72.837436,
+              18.9766561
+            ],
+            [
+              72.8374841,
+              18.9766498
+            ],
+            [
+              72.837558,
+              18.97664
+            ],
+            [
+              72.8375629,
+              18.9766727
+            ],
+            [
+              72.8377978,
+              18.9766416
+            ],
+            [
+              72.8377625,
+              18.9764034
+            ],
+            [
+              72.8375307,
+              18.9764341
+            ],
+            [
+              72.8375442,
+              18.9765252
+            ],
+            [
+              72.8373381,
+              18.9765525
+            ],
+            [
+              72.8373194,
+              18.9764258
+            ],
+            [
+              72.8374193,
+              18.9764126
+            ],
+            [
+              72.8373989,
+              18.9762744
+            ],
+            [
+              72.83738,
+              18.9761466
+            ],
+            [
+              72.8371707,
+              18.9761743
+            ],
+            [
+              72.8371763,
+              18.9762118
+            ],
+            [
+              72.8370111,
+              18.9762337
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-10",
+        "name": "Penguin",
+        "exhibitNumber": 10,
+        "category": "birds",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "osm",
+        "sourceFeatureId": "way/357092374",
+        "osmFeatureId": "attraction-357092374",
+        "osmLayer": "attractions",
+        "lastEdited": "2026-11-20T11:25:13.441Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-11",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.8382739,
+              18.9777927
+            ],
+            [
+              72.8381785,
+              18.9776423
+            ],
+            [
+              72.8381408,
+              18.9776637
+            ],
+            [
+              72.8382362,
+              18.9778141
+            ],
+            [
+              72.8382739,
+              18.9777927
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-11",
+        "name": "Deer",
+        "exhibitNumber": 11,
+        "category": "animal",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "osm",
+        "sourceFeatureId": "way/1052761654",
+        "osmFeatureId": "attraction-1052761654",
+        "osmLayer": "attractions",
+        "lastEdited": "2026-11-20T11:25:21.356Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-12",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.8387982,
+              18.9788778
+            ],
+            [
+              72.8389484,
+              18.97887
+            ],
+            [
+              72.8389425,
+              18.9787686
+            ],
+            [
+              72.8387923,
+              18.9787764
+            ],
+            [
+              72.8387982,
+              18.9788778
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-12",
+        "name": "Hippo",
+        "exhibitNumber": 12,
+        "category": "animal",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "osm",
+        "sourceFeatureId": "way/1052761657",
+        "osmFeatureId": "attraction-1052761657",
+        "osmLayer": "attractions",
+        "lastEdited": "2026-11-20T11:25:29.073Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-13",
+      "geometry": null,
+      "properties": {
+        "id": "exhibit-13",
+        "name": "Macaque",
+        "exhibitNumber": 13,
+        "category": "animal",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": null,
+        "sourceFeatureId": null,
+        "osmFeatureId": null,
+        "osmLayer": null,
+        "lastEdited": null,
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-14",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.8375163,
+              18.9791529
+            ],
+            [
+              72.8378155,
+              18.9790934
+            ],
+            [
+              72.837806,
+              18.979051
+            ],
+            [
+              72.8375069,
+              18.9791106
+            ],
+            [
+              72.8375163,
+              18.9791529
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-14",
+        "name": "Tiger",
+        "exhibitNumber": 14,
+        "category": "animal",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "osm",
+        "sourceFeatureId": "way/1052761671",
+        "osmFeatureId": "attraction-1052761671",
+        "osmLayer": "attractions",
+        "lastEdited": "2026-11-20T11:25:38.656Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-15",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.83766701787616,
+              18.978994776144532
+            ],
+            [
+              72.83799258283085,
+              18.978912255193237
+            ],
+            [
+              72.83795230675378,
+              18.978766256486537
+            ],
+            [
+              72.83762841996901,
+              18.97884877751018
+            ],
+            [
+              72.83766701787616,
+              18.978994776144532
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-15",
+        "name": "Jackal",
+        "exhibitNumber": 15,
+        "category": "animal",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "manual",
+        "sourceFeatureId": null,
+        "osmFeatureId": null,
+        "osmLayer": null,
+        "lastEdited": "2026-11-20T11:37:43.154Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-16",
+      "geometry": null,
+      "properties": {
+        "id": "exhibit-16",
+        "name": "Hyena",
+        "exhibitNumber": 16,
+        "category": "animal",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": null,
+        "sourceFeatureId": null,
+        "osmFeatureId": null,
+        "osmLayer": null,
+        "lastEdited": null,
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-17",
+      "geometry": null,
+      "properties": {
+        "id": "exhibit-17",
+        "name": "Leopard",
+        "exhibitNumber": 17,
+        "category": "animal",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": null,
+        "sourceFeatureId": null,
+        "osmFeatureId": null,
+        "osmLayer": null,
+        "lastEdited": null,
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-18",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.836681,
+              18.9791274
+            ],
+            [
+              72.8367756,
+              18.9790483
+            ],
+            [
+              72.8370341,
+              18.9790483
+            ],
+            [
+              72.8370516,
+              18.9791375
+            ],
+            [
+              72.8370547,
+              18.9791533
+            ],
+            [
+              72.8370109,
+              18.9791615
+            ],
+            [
+              72.8370001,
+              18.9790868
+            ],
+            [
+              72.8367978,
+              18.9790869
+            ],
+            [
+              72.836681,
+              18.9791274
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-18",
+        "name": "Bear",
+        "exhibitNumber": 18,
+        "category": "animal",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "osm",
+        "sourceFeatureId": "way/1052761670",
+        "osmFeatureId": "attraction-1052761670",
+        "osmLayer": "attractions",
+        "lastEdited": "2026-11-20T11:25:46.872Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-19",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.8361033,
+              18.9794671
+            ],
+            [
+              72.8363415,
+              18.9793997
+            ],
+            [
+              72.8362869,
+              18.979357
+            ],
+            [
+              72.8362112,
+              18.979321
+            ],
+            [
+              72.8361118,
+              18.9793053
+            ],
+            [
+              72.8359867,
+              18.9793163
+            ],
+            [
+              72.8361033,
+              18.9794671
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-19",
+        "name": "Lion",
+        "exhibitNumber": 19,
+        "category": "animal",
+        "description": "",
+        "source": "Visitor map",
+        "verified": false,
+        "status": "reference",
+        "geometrySource": "osm",
+        "sourceFeatureId": "way/1006878174",
+        "osmFeatureId": "attraction-1006878174",
+        "osmLayer": "attractions",
+        "lastEdited": "2026-11-20T11:25:56.558Z",
+        "rejectedSourceIds": []
+      }
+    }
+  ]
+}

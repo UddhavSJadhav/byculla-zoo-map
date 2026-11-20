@@ -82,7 +82,11 @@ export function EditorChrome({ session }: { session: Session }) {
             {session.pendingDelete ? (
               <Confirm
                 title={`Delete ${session.pendingDelete.label}?`}
-                body="This removes it from your local map. The imported OpenStreetMap file stays as it is."
+                body={
+                  session.pendingDelete.id.startsWith('attraction:')
+                    ? 'This removes the drawn shape. The exhibit stays in the inventory.'
+                    : 'This removes it from your local map. The imported OpenStreetMap file stays as it is.'
+                }
                 confirmLabel="Delete"
                 onConfirm={session.confirmDelete}
                 onCancel={() => session.setPendingDelete(null)}
@@ -122,7 +126,16 @@ export function EditorChrome({ session }: { session: Session }) {
                 ))}
               </ul>
             ) : null}
-            {showProperties ? (
+            {session.mappingAttraction ? (
+              <p className="rounded-xl bg-[#f4ead7] px-2 py-1.5 text-[11px] leading-4 text-neutral-800">
+                Exhibit {session.mappingAttraction.exhibitNumber}. {session.mappingAttraction.name}. Finish saves this shape on the attraction. OpenStreetMap files are not changed.
+              </p>
+            ) : session.selectedAttraction ? (
+              <p className="rounded-xl bg-[#f4ead7] px-2 py-1.5 text-[11px] leading-4 text-neutral-800">
+                Exhibit {session.selectedAttraction.exhibitNumber}. {session.selectedAttraction.name}. Change the name and description in Attractions. {session.selectedAttraction.geometryOrigin === 'osm' ? 'Moving a handle copies the shape onto the attraction. The OpenStreetMap feature stays as it is.' : 'These handles only reshape the geometry.'}
+              </p>
+            ) : null}
+            {showProperties && !session.mappingAttraction && !session.selectedAttraction ? (
               <form
                 className="grid grid-cols-2 gap-2"
                 onSubmit={(event) => {

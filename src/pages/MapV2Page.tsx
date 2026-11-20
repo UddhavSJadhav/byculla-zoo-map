@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import 'maplibre-gl/dist/maplibre-gl.css'
+import { AttractionAdmin } from '@/components/map-v2/attractions/AttractionAdmin'
+import { AttractionDetails } from '@/components/map-v2/attractions/AttractionDetails'
+import { AttractionLayer } from '@/components/map-v2/attractions/AttractionLayer'
 import { MapEditor } from '@/components/map-v2/editor/MapEditor'
 import { ZooMap } from '@/components/map-v2/ZooMap'
 import type { Map } from 'maplibre-gl'
 import { extractedDatasets, mappedNotLayered, missingGeography } from '@/data/map-v2/availability'
 import { layerSwatches } from '@/map-v2/layers'
+import { useAttractionBaseline } from '@/components/map-v2/attractions/useAttractions'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { mapLayerIds, type MapLayerId } from '@/types/map-v2'
 
@@ -12,9 +16,11 @@ const initialLayers = Object.fromEntries(mapLayerIds.map((id) => [id, true])) as
 
 export function MapV2Page() {
   const { phase, position, message, fixCount, requestLocation } = useGeolocation()
+  const baseline = useAttractionBaseline()
   const [layers, setLayers] = useState(initialLayers)
   const [map, setMap] = useState<Map | null>(null)
   const [editing, setEditing] = useState(false)
+  const [managingAttractions, setManagingAttractions] = useState(false)
   const [focusRequestId, setFocusRequestId] = useState(0)
   const [awaitingFix, setAwaitingFix] = useState(false)
   const fixCountAtStart = useRef(0)
@@ -49,14 +55,24 @@ export function MapV2Page() {
             </a>
             <div className="flex items-center gap-2">
               {import.meta.env.DEV ? (
-                <button
-                  type="button"
-                  aria-pressed={editing}
-                  onClick={() => setEditing((current) => !current)}
-                  className={`rounded-full px-3 py-1.5 text-sm font-semibold shadow-md ring-1 ring-black/5 ${editing ? 'bg-neutral-900 text-white' : 'bg-white/95 text-neutral-800'}`}
-                >
-                  {editing ? 'Editing' : 'Edit map'}
-                </button>
+                <>
+                  <button
+                    type="button"
+                    aria-pressed={managingAttractions}
+                    onClick={() => setManagingAttractions((current) => !current)}
+                    className={`rounded-full px-3 py-1.5 text-sm font-semibold shadow-md ring-1 ring-black/5 ${managingAttractions ? 'bg-neutral-900 text-white' : 'bg-white/95 text-neutral-800'}`}
+                  >
+                    Attractions
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={editing}
+                    onClick={() => setEditing((current) => !current)}
+                    className={`rounded-full px-3 py-1.5 text-sm font-semibold shadow-md ring-1 ring-black/5 ${editing ? 'bg-neutral-900 text-white' : 'bg-white/95 text-neutral-800'}`}
+                  >
+                    {editing ? 'Editing' : 'Edit map'}
+                  </button>
+                </>
               ) : null}
               <p className="rounded-full bg-white/95 px-3 py-1.5 text-sm font-semibold shadow-md ring-1 ring-black/5">
                 Map V2
@@ -72,6 +88,17 @@ export function MapV2Page() {
           />
         </div>
       </header>
+      <AttractionLayer map={map} />
+      <AttractionDetails map={map} enabled={!editing} />
+      {import.meta.env.DEV && managingAttractions ? (
+        <AttractionAdmin
+          docked={editing}
+          onEditMap={() => {
+            setEditing(true)
+            setManagingAttractions(true)
+          }}
+        />
+      ) : null}
       {import.meta.env.DEV ? <MapEditor map={map} editing={editing} /> : null}
       <div className="pointer-events-none absolute right-3 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex w-[min(22rem,calc(100%-1.5rem))] flex-col items-end gap-2">
         <button
@@ -84,6 +111,11 @@ export function MapV2Page() {
         <p className="pointer-events-none max-w-full rounded-full bg-white/95 px-3 py-1 text-xs text-neutral-700 shadow-md ring-1 ring-black/5" role="status">
           {message}
         </p>
+        {baseline.status === 'error' ? (
+          <p className="pointer-events-none max-w-full rounded-full bg-white/95 px-3 py-1 text-xs text-red-700 shadow-md ring-1 ring-black/5" role="alert">
+            {baseline.error}
+          </p>
+        ) : null}
         <details className="pointer-events-auto max-h-[42vh] w-full overflow-y-auto rounded-3xl bg-white/95 p-4 shadow-lg ring-1 ring-black/5">
           <summary className="cursor-pointer text-sm font-semibold">Legend and data</summary>
           <div className="mt-3 space-y-3">
