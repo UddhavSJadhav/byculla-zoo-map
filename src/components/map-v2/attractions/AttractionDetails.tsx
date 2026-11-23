@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import type { Map, MapMouseEvent } from 'maplibre-gl'
 import { useAttractions } from '@/components/map-v2/attractions/useAttractions'
-import { attractionCategories, attractionStatuses, type AttractionRecord } from '@/attractions/types'
+import { attractionStatuses, type AttractionRecord } from '@/attractions/types'
+import { availabilityLabel, categoryLabel } from '@/attractions/visitor'
 import { attractionRegistryLayerIds } from '@/map-v2/attractionRegistryLayer'
 
-export function AttractionDetails({ map, enabled }: { map: Map | null; enabled: boolean }) {
+export function AttractionDetails({ map, enabled, visitor }: { map: Map | null; enabled: boolean; visitor: boolean }) {
   const [attractionIds, setAttractionIds] = useState<string[]>([])
   const attractions = useAttractions()
   const selected = attractionIds
@@ -54,29 +55,40 @@ export function AttractionDetails({ map, enabled }: { map: Map | null; enabled: 
           Close
         </button>
       </div>
-      {shared && sourceId ? <p className="mt-1 text-[11px] text-neutral-500">These exhibits reference one OpenStreetMap feature, {sourceId}. Each keeps its own record.</p> : null}
+      {shared ? (
+        <p className="mt-1 text-[11px] text-neutral-500">
+          {visitor ? 'These exhibits share this place. Each keeps its own listing.' : `These exhibits reference one OpenStreetMap feature, ${sourceId}. Each keeps its own record.`}
+        </p>
+      ) : null}
       <div className="mt-2 space-y-2">
         {selected.map((attraction) => (
-          <AttractionSummary key={attraction.id} attraction={attraction} numbered={shared} />
+          <AttractionSummary key={attraction.id} attraction={attraction} numbered={shared} visitor={visitor} />
         ))}
       </div>
     </section>
   )
 }
 
-function AttractionSummary({ attraction, numbered }: { attraction: AttractionRecord; numbered: boolean }) {
-  const category = attractionCategories.find((item) => item.id === attraction.category)?.label ?? attraction.category
+function AttractionSummary({ attraction, numbered, visitor }: { attraction: AttractionRecord; numbered: boolean; visitor: boolean }) {
+  const category = categoryLabel(attraction.category)
   const status = attractionStatuses.find((item) => item.id === attraction.status)?.label ?? attraction.status
+  const availability = availabilityLabel(attraction.status)
   return (
     <div>
       {numbered ? <p className="text-sm font-semibold">{attraction.exhibitNumber}. {attraction.name}</p> : null}
-      <p className="text-xs text-neutral-600">
-        {category} · {status} · {attraction.verified ? 'Verified' : 'Not verified'} · {attraction.geometry?.type === 'Point' ? 'Point' : 'Polygon'}
-        {attraction.geometryOrigin === 'osm' && attraction.sourceFeatureId ? ` · OpenStreetMap ${attraction.sourceFeatureId}` : ''}
-        {attraction.geometryOrigin === 'manual' ? ' · Manual shape' : ''}
-      </p>
+      {visitor ? (
+        <p className={`text-xs ${attraction.status === 'closed' ? 'font-semibold text-neutral-800' : 'text-neutral-600'}`}>
+          {category} · {availability}
+        </p>
+      ) : (
+        <p className="text-xs text-neutral-600">
+          {category} · {status} · {attraction.verified ? 'Verified' : 'Not verified'} · {attraction.geometry?.type === 'Point' ? 'Point' : 'Polygon'}
+          {attraction.geometryOrigin === 'osm' && attraction.sourceFeatureId ? ` · OpenStreetMap ${attraction.sourceFeatureId}` : ''}
+          {attraction.geometryOrigin === 'manual' ? ' · Manual shape' : ''}
+        </p>
+      )}
       {attraction.description ? <p className="mt-1 text-sm text-neutral-800">{attraction.description}</p> : null}
-      {attraction.status === 'reference' ? <p className="mt-1 text-[11px] text-neutral-500">This name comes from the visitor map. It does not confirm the exhibit is open.</p> : null}
+      {attraction.status === 'reference' ? <p className="mt-1 text-[11px] text-neutral-500">This listing does not confirm the exhibit is open.</p> : null}
     </div>
   )
 }

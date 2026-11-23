@@ -1,6 +1,7 @@
 import type { LayerSpecification, Map } from 'maplibre-gl'
 import { mapSources } from '@/data/map-v2/sources'
 import { emptyFeatureCollection } from '@/map-v2/accuracyCircle'
+import { pathAccessLayerIds } from '@/map-v2/pathAccessLayer'
 import type { MapLayerId } from '@/types/map-v2'
 
 const labelFont = ['Noto Sans Regular']
@@ -49,7 +50,7 @@ export const layerSwatches: Record<MapLayerId, string> = {
 
 export const layerGroupIds: Record<MapLayerId, string[]> = {
   boundary: ['zoo-ground', 'zoo-boundary-label'],
-  paths: ['zoo-paths-casing', 'zoo-paths'],
+  paths: ['zoo-paths-casing', 'zoo-paths', ...pathAccessLayerIds],
   buildings: ['zoo-buildings', 'zoo-buildings-line'],
   gardens: ['zoo-gardens', 'zoo-garden-labels'],
   enclosures: ['zoo-enclosures', 'zoo-enclosures-line', 'zoo-enclosure-labels'],

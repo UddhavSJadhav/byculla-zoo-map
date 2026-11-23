@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { AttractionAdmin } from '@/components/map-v2/attractions/AttractionAdmin'
 import { AttractionDetails } from '@/components/map-v2/attractions/AttractionDetails'
+import { AttractionFilters } from '@/components/map-v2/attractions/AttractionFilters'
 import { AttractionLayer } from '@/components/map-v2/attractions/AttractionLayer'
+import { PathAccessLayer } from '@/components/map-v2/paths/PathAccessLayer'
+import { PathAdmin } from '@/components/map-v2/paths/PathAdmin'
+import { PathLegend } from '@/components/map-v2/paths/PathLegend'
 import { MapEditor } from '@/components/map-v2/editor/MapEditor'
 import { ZooMap } from '@/components/map-v2/ZooMap'
 import type { Map } from 'maplibre-gl'
@@ -10,6 +14,7 @@ import { extractedDatasets, mappedNotLayered, missingGeography } from '@/data/ma
 import { layerSwatches } from '@/map-v2/layers'
 import { useAttractionBaseline } from '@/components/map-v2/attractions/useAttractions'
 import { useGeolocation } from '@/hooks/useGeolocation'
+import { attractionCategories, type AttractionCategory } from '@/attractions/types'
 import { mapLayerIds, type MapLayerId } from '@/types/map-v2'
 
 const initialLayers = Object.fromEntries(mapLayerIds.map((id) => [id, true])) as Record<MapLayerId, boolean>
@@ -21,6 +26,11 @@ export function MapV2Page() {
   const [map, setMap] = useState<Map | null>(null)
   const [editing, setEditing] = useState(false)
   const [managingAttractions, setManagingAttractions] = useState(false)
+  const [managingPaths, setManagingPaths] = useState(false)
+  const [selectedPathId, setSelectedPathId] = useState<string | null>(null)
+  const [categories, setCategories] = useState<AttractionCategory[]>(attractionCategories.map((category) => category.id))
+  const [showClosed, setShowClosed] = useState(false)
+  const visitorMode = !editing && !managingAttractions && !managingPaths
   const [focusRequestId, setFocusRequestId] = useState(0)
   const [awaitingFix, setAwaitingFix] = useState(false)
   const fixCountAtStart = useRef(0)
@@ -59,10 +69,24 @@ export function MapV2Page() {
                   <button
                     type="button"
                     aria-pressed={managingAttractions}
-                    onClick={() => setManagingAttractions((current) => !current)}
+                    onClick={() => {
+                      setManagingAttractions((current) => !current)
+                      setManagingPaths(false)
+                    }}
                     className={`rounded-full px-3 py-1.5 text-sm font-semibold shadow-md ring-1 ring-black/5 ${managingAttractions ? 'bg-neutral-900 text-white' : 'bg-white/95 text-neutral-800'}`}
                   >
                     Attractions
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={managingPaths}
+                    onClick={() => {
+                      setManagingPaths((current) => !current)
+                      setManagingAttractions(false)
+                    }}
+                    className={`rounded-full px-3 py-1.5 text-sm font-semibold shadow-md ring-1 ring-black/5 ${managingPaths ? 'bg-neutral-900 text-white' : 'bg-white/95 text-neutral-800'}`}
+                  >
+                    Paths
                   </button>
                   <button
                     type="button"
@@ -86,10 +110,31 @@ export function MapV2Page() {
             title="Search is not available yet"
             className="w-full rounded-2xl border-0 bg-white/95 px-4 py-3 text-base shadow-md ring-1 ring-black/5 outline-none"
           />
+          {visitorMode ? (
+            <AttractionFilters
+              categories={categories}
+              showClosed={showClosed}
+              onToggleCategory={(category) =>
+                setCategories((current) => (current.includes(category) ? current.filter((item) => item !== category) : [...current, category]))
+              }
+              onToggleClosed={() => setShowClosed((current) => !current)}
+            />
+          ) : null}
         </div>
       </header>
-      <AttractionLayer map={map} />
-      <AttractionDetails map={map} enabled={!editing} />
+      <AttractionLayer map={map} visitor={visitorMode} categories={categories} showClosed={showClosed} />
+      <AttractionDetails map={map} enabled={!editing} visitor={visitorMode} />
+      <PathAccessLayer
+        map={map}
+        visitor={visitorMode}
+        editing={editing}
+        pathsVisible={layers.paths}
+        selectedId={selectedPathId}
+        interactive={managingPaths && !editing}
+        onSelect={setSelectedPathId}
+      />
+      {import.meta.env.DEV && managingPaths ? <PathAdmin map={map} selectedId={selectedPathId} editing={editing} onSelect={setSelectedPathId} /> : null}
+      {editing ? null : <PathLegend visitor={visitorMode} />}
       {import.meta.env.DEV && managingAttractions ? (
         <AttractionAdmin
           docked={editing}

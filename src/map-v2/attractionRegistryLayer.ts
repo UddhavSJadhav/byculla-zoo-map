@@ -1,6 +1,7 @@
 import type { Feature, FeatureCollection, Geometry, GeoJsonProperties, Position } from 'geojson'
 import type { GeoJSONSource, LayerSpecification, Map } from 'maplibre-gl'
 import { geometryForFeature, geometryForSource } from '@/attractions/candidates'
+import { categoryPresentation } from '@/attractions/visitor'
 import type { AttractionGeometry, AttractionRecord } from '@/attractions/types'
 import { featureIdForAttraction } from '@/attractions/store'
 
@@ -8,11 +9,28 @@ export const attractionRegistryLayerIds = [
   'registry-attraction-fill',
   'registry-attraction-line',
   'registry-attraction-circle',
+  'registry-attraction-mark',
   'registry-attraction-label',
 ] as const
 
-export function syncAttractionRegistry(map: Map, attractions: AttractionRecord[]) {
-  const data = collectionFor(attractions)
+const categoryColor = [
+  'match',
+  ['get', 'category'],
+  'animal',
+  categoryPresentation.animal.color,
+  'birds',
+  categoryPresentation.birds.color,
+  'garden',
+  categoryPresentation.garden.color,
+  'habitat',
+  categoryPresentation.habitat.color,
+  'venue',
+  categoryPresentation.venue.color,
+  '#8d6b4a',
+] as const
+
+export function syncAttractionRegistry(map: Map, attractions: AttractionRecord[], visitor = false) {
+  const data = collectionFor(attractions, visitor)
   if (!map.getSource('attraction-registry')) {
     map.addSource('attraction-registry', { type: 'geojson', data })
     const before = map.getLayer('editor-draft-fill') ? 'editor-draft-fill' : map.getLayer('zoo-boundary-label') ? 'zoo-boundary-label' : undefined
@@ -35,7 +53,7 @@ export function syncCandidateHighlight(map: Map, geometry: AttractionGeometry | 
   if (source && source.type === 'geojson') (source as GeoJSONSource).setData(data)
 }
 
-function collectionFor(attractions: AttractionRecord[]): FeatureCollection<Geometry, GeoJsonProperties> {
+function collectionFor(attractions: AttractionRecord[], visitor: boolean): FeatureCollection<Geometry, GeoJsonProperties> {
   const features: Feature<Geometry, GeoJsonProperties>[] = []
   const shared: Record<string, AttractionRecord[]> = {}
   for (const attraction of attractions) {
@@ -46,22 +64,24 @@ function collectionFor(attractions: AttractionRecord[]): FeatureCollection<Geome
       shared[attraction.sourceFeatureId] = group
       continue
     }
-    features.push(...featuresFor([attraction], attraction.geometry, featureIdForAttraction(attraction.id)))
+    features.push(...featuresFor([attraction], attraction.geometry, featureIdForAttraction(attraction.id), visitor))
   }
   for (const [sourceId, group] of Object.entries(shared)) {
     const sample = group[0]
     const geometry = (sample?.osmFeatureId ? geometryForFeature(sample.osmFeatureId) : null) ?? geometryForSource(sourceId) ?? sample?.geometry ?? null
     if (!sample || !geometry) continue
-    features.push(...featuresFor(group, geometry, featureIdForAttraction(sample.id)))
+    features.push(...featuresFor(group, geometry, featureIdForAttraction(sample.id), visitor))
   }
   return { type: 'FeatureCollection', features }
 }
 
-function featuresFor(group: AttractionRecord[], geometry: AttractionGeometry, id: string): Feature<Geometry, GeoJsonProperties>[] {
+function featuresFor(group: AttractionRecord[], geometry: AttractionGeometry, id: string, visitor: boolean): Feature<Geometry, GeoJsonProperties>[] {
   const sorted = [...group].sort((left, right) => left.exhibitNumber - right.exhibitNumber)
   const first = sorted[0]
   if (!first) return []
-  const label = sorted.map((attraction) => `${attraction.exhibitNumber}. ${attraction.name}`).join('\n')
+  const categories = [...new Set(sorted.map((attraction) => attraction.category))]
+  const category = categories.length === 1 ? categories[0] : 'mixed'
+  const label = sorted.map((attraction) => `${attraction.exhibitNumber}. ${attraction.name}${attraction.status === 'closed' ? ' (closed)' : ''}`).join('\n')
   const properties = {
     id,
     attractionId: first.id,
@@ -72,6 +92,10 @@ function featuresFor(group: AttractionRecord[], geometry: AttractionGeometry, id
     sourceFeatureId: first.sourceFeatureId,
     anchor: geometry.type === 'Point' ? 'point' : 'area',
     label,
+    palette: visitor ? 'visitor' : 'admin',
+    category,
+    closed: sorted.every((attraction) => attraction.status === 'closed') ? 'yes' : 'no',
+    mark: category === 'mixed' ? categories.map((item) => categoryPresentation[item].mark).join('') : categoryPresentation[category].mark,
   }
   const features: Feature<Geometry, GeoJsonProperties>[] = [{ type: 'Feature', id, geometry, properties }]
   if (geometry.type === 'Polygon') {
@@ -105,8 +129,8 @@ const registryLayers = [
     source: 'attraction-registry',
     filter: ['==', ['geometry-type'], 'Polygon'],
     paint: {
-      'fill-color': ['case', ['==', ['get', 'origin'], 'osm'], '#c45c26', '#e7d4c4'],
-      'fill-opacity': ['case', ['==', ['get', 'origin'], 'osm'], 0.16, 0.72],
+      'fill-color': ['case', ['!=', ['get', 'palette'], 'visitor'], ['case', ['==', ['get', 'origin'], 'osm'], '#c45c26', '#e7d4c4'], ['==', ['get', 'closed'], 'yes'], '#d9d3cc', categoryColor],
+      'fill-opacity': ['case', ['!=', ['get', 'palette'], 'visitor'], ['case', ['==', ['get', 'origin'], 'osm'], 0.16, 0.72], 0.22],
     },
   },
   {
@@ -115,21 +139,35 @@ const registryLayers = [
     source: 'attraction-registry',
     filter: ['==', ['geometry-type'], 'Polygon'],
     paint: {
-      'line-color': ['case', ['==', ['get', 'origin'], 'osm'], '#c45c26', '#8d6b4a'],
-      'line-width': ['case', ['==', ['get', 'origin'], 'osm'], 2.5, 2],
+      'line-color': ['case', ['!=', ['get', 'palette'], 'visitor'], ['case', ['==', ['get', 'origin'], 'osm'], '#c45c26', '#8d6b4a'], ['==', ['get', 'closed'], 'yes'], '#8a8178', categoryColor],
+      'line-width': ['case', ['!=', ['get', 'palette'], 'visitor'], ['case', ['==', ['get', 'origin'], 'osm'], 2.5, 2], 2.5],
     },
   },
   {
     id: 'registry-attraction-circle',
     type: 'circle',
     source: 'attraction-registry',
-    filter: ['all', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'anchor'], 'point']],
+    filter: ['all', ['==', ['geometry-type'], 'Point'], ['any', ['==', ['get', 'palette'], 'visitor'], ['==', ['get', 'anchor'], 'point']]],
     paint: {
-      'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 7, 18, 11, 20, 14],
-      'circle-color': '#c47b4a',
+      'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 8, 18, 11, 20, 14],
+      'circle-color': ['case', ['!=', ['get', 'palette'], 'visitor'], '#c47b4a', ['==', ['get', 'closed'], 'yes'], '#8a8178', categoryColor],
       'circle-stroke-color': '#f7f1e4',
       'circle-stroke-width': 2,
     },
+  },
+  {
+    id: 'registry-attraction-mark',
+    type: 'symbol',
+    source: 'attraction-registry',
+    filter: ['all', ['==', ['geometry-type'], 'Point'], ['==', ['get', 'palette'], 'visitor']],
+    layout: {
+      'text-field': ['get', 'mark'],
+      'text-font': ['Noto Sans Regular'],
+      'text-size': 11,
+      'text-anchor': 'center',
+      'text-allow-overlap': true,
+    },
+    paint: { 'text-color': '#fffaf3' },
   },
   {
     id: 'registry-attraction-label',

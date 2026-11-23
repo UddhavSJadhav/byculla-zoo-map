@@ -1,12 +1,27 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { Map } from 'maplibre-gl'
 import { getCandidateHighlight, subscribeCandidateHighlight } from '@/attractions/candidates'
-import type { AttractionGeometry } from '@/attractions/types'
+import type { AttractionCategory, AttractionGeometry } from '@/attractions/types'
+import { visitorAttractions } from '@/attractions/visitor'
 import { syncAttractionRegistry, syncCandidateHighlight } from '@/map-v2/attractionRegistryLayer'
 import { useAttractions } from '@/components/map-v2/attractions/useAttractions'
 
-export function AttractionLayer({ map }: { map: Map | null }) {
+export function AttractionLayer({
+  map,
+  visitor,
+  categories,
+  showClosed,
+}: {
+  map: Map | null
+  visitor: boolean
+  categories: readonly AttractionCategory[]
+  showClosed: boolean
+}) {
   const attractions = useAttractions()
+  const visible = useMemo(
+    () => (visitor ? visitorAttractions(attractions, categories, showClosed) : attractions),
+    [attractions, categories, showClosed, visitor],
+  )
   const [highlightToken, setHighlightToken] = useState(0)
   useEffect(() => subscribeCandidateHighlight(() => setHighlightToken((current) => current + 1)), [])
   const highlight = getCandidateHighlight()
@@ -16,7 +31,7 @@ export function AttractionLayer({ map }: { map: Map | null }) {
     if (!map) return
     const draw = () => {
       try {
-        syncAttractionRegistry(map, attractions)
+        syncAttractionRegistry(map, visible, visitor)
       } catch {
         // The map can be removed while the registry is updating.
       }
@@ -26,7 +41,7 @@ export function AttractionLayer({ map }: { map: Map | null }) {
     return () => {
       map.off('load', draw)
     }
-  }, [map, attractions])
+  }, [map, visible, visitor])
 
   useEffect(() => {
     if (!map) return
