@@ -28,12 +28,13 @@ import { mapLayerIds, type MapLayerId } from '@/types/map-v2'
 
 const initialLayers = Object.fromEntries(mapLayerIds.map((id) => [id, true])) as Record<MapLayerId, boolean>
 
-export function MapV2Page() {
+export function MapV2Page({ mode }: { mode: 'visitor' | 'admin' }) {
   const { phase, position, message, fixCount, requestLocation, wait, errorKind } = useGeolocation()
   const baseline = useAttractionBaseline()
   const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine))
   const [notice, setNotice] = useState({ phase, recovered: false })
   const [guideActive, setGuideActive] = useState(false)
+  const [destinationsOpen, setDestinationsOpen] = useState(false)
   if (notice.phase !== phase) setNotice(nextLocationNotice(notice, phase))
   const locationExplanation = visitorLocationExplanation({
     phase,
@@ -51,12 +52,12 @@ export function MapV2Page() {
   const [layers, setLayers] = useState(initialLayers)
   const [map, setMap] = useState<Map | null>(null)
   const [editing, setEditing] = useState(false)
-  const [managingAttractions, setManagingAttractions] = useState(false)
+  const [managingAttractions, setManagingAttractions] = useState(mode === 'admin')
   const [managingPaths, setManagingPaths] = useState(false)
   const [selectedPathId, setSelectedPathId] = useState<string | null>(null)
   const [categories, setCategories] = useState<AttractionCategory[]>(attractionCategories.map((category) => category.id))
   const [showClosed, setShowClosed] = useState(false)
-  const visitorMode = !editing && !managingAttractions && !managingPaths
+  const visitorMode = mode === 'visitor'
   const [focusRequestId, setFocusRequestId] = useState(0)
   const [routeGeometry, setRouteGeometry] = useState<LineString | null>(null)
   const [routeFitToken, setRouteFitToken] = useState(0)
@@ -78,6 +79,7 @@ export function MapV2Page() {
   }, [awaitingFix, fixCount, position])
 
   const sheetRef = useRef<HTMLDivElement>(null)
+  const headerRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
     const update = () => {
@@ -92,6 +94,20 @@ export function MapV2Page() {
       window.removeEventListener('offline', update)
     }
   }, [baseline.status])
+
+  useEffect(() => {
+    const node = headerRef.current
+    const root = node?.closest('.map-v2')
+    if (visitorMode || !(node instanceof HTMLElement) || !(root instanceof HTMLElement)) return
+    const apply = () => root.style.setProperty('--admin-header-offset', `${node.offsetHeight + 12}px`)
+    apply()
+    const observer = new ResizeObserver(apply)
+    observer.observe(node)
+    return () => {
+      observer.disconnect()
+      root.style.removeProperty('--admin-header-offset')
+    }
+  }, [visitorMode, offline.showIndicator])
 
   useEffect(() => {
     const node = sheetRef.current
@@ -117,101 +133,103 @@ export function MapV2Page() {
   return (
     <div className={`map-v2 relative h-dvh w-full overflow-hidden bg-[#f4ead7] text-neutral-900${visitorMode ? ' map-v2-visitor' : ''}${editing ? ' map-v2-editing' : ''}`}>
       <ZooMap position={position} focusRequestId={focusRequestId} layers={layers} onMapReady={setMap} />
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-10 px-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
-        <div className="pointer-events-auto mx-auto flex max-w-3xl flex-col gap-2">
-          <div className="flex items-center justify-between gap-2">
-            <a
-              href="#/"
-              className="rounded-full bg-white/95 px-3 py-1.5 text-sm font-medium text-neutral-700 shadow-md ring-1 ring-black/5"
-            >
-              Visitor map
-            </a>
-            <div className="flex items-center gap-2">
-              {import.meta.env.DEV ? (
-                <>
-                  <button
-                    type="button"
-                    aria-pressed={managingAttractions}
-                    onClick={() => {
-                      setManagingAttractions((current) => !current)
-                      setManagingPaths(false)
-                    }}
-                    className={`rounded-full px-3 py-1.5 text-sm font-semibold shadow-md ring-1 ring-black/5 ${managingAttractions ? 'bg-neutral-900 text-white' : 'bg-white/95 text-neutral-800'}`}
-                  >
-                    Attractions
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={managingPaths}
-                    onClick={() => {
-                      setManagingPaths((current) => !current)
-                      setManagingAttractions(false)
-                    }}
-                    className={`rounded-full px-3 py-1.5 text-sm font-semibold shadow-md ring-1 ring-black/5 ${managingPaths ? 'bg-neutral-900 text-white' : 'bg-white/95 text-neutral-800'}`}
-                  >
-                    Paths
-                  </button>
-                  <button
-                    type="button"
-                    aria-pressed={editing}
-                    onClick={() => setEditing((current) => !current)}
-                    className={`rounded-full px-3 py-1.5 text-sm font-semibold shadow-md ring-1 ring-black/5 ${editing ? 'bg-neutral-900 text-white' : 'bg-white/95 text-neutral-800'}`}
-                  >
-                    {editing ? 'Editing' : 'Edit map'}
-                  </button>
-                </>
-              ) : null}
-              <p className="rounded-full bg-white/95 px-3 py-1.5 text-sm font-semibold shadow-md ring-1 ring-black/5">
-                Map V2
-              </p>
+      {visitorMode ? (
+        offline.showIndicator ? (
+          <p
+            className="pointer-events-auto absolute top-[max(0.75rem,env(safe-area-inset-top))] right-3 left-14 z-10 rounded-2xl bg-white px-3 py-2 text-sm font-medium text-neutral-950 shadow-md ring-1 ring-neutral-300"
+            role="status"
+          >
+            {offline.text}
+          </p>
+        ) : null
+      ) : (
+        <header ref={headerRef} className="pointer-events-none absolute inset-x-0 top-0 z-10 px-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
+          <div className="pointer-events-auto mx-auto flex max-w-3xl flex-col gap-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <a
+                href="/"
+                className="inline-flex min-h-11 items-center rounded-full bg-white/95 px-3 text-sm font-medium text-neutral-700 shadow-md ring-1 ring-black/5"
+              >
+                Visitor map
+              </a>
+              <button
+                type="button"
+                aria-pressed={managingAttractions}
+                onClick={() => {
+                  setManagingAttractions((current) => !current)
+                  setManagingPaths(false)
+                }}
+                className={`inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold shadow-md ring-1 ring-black/5 ${managingAttractions ? 'bg-neutral-900 text-white' : 'bg-white/95 text-neutral-800'}`}
+              >
+                Attractions
+              </button>
+              <button
+                type="button"
+                aria-pressed={managingPaths}
+                onClick={() => {
+                  setManagingPaths((current) => !current)
+                  setManagingAttractions(false)
+                }}
+                className={`inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold shadow-md ring-1 ring-black/5 ${managingPaths ? 'bg-neutral-900 text-white' : 'bg-white/95 text-neutral-800'}`}
+              >
+                Paths
+              </button>
+              <button
+                type="button"
+                aria-pressed={editing}
+                onClick={() => setEditing((current) => !current)}
+                className={`inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold shadow-md ring-1 ring-black/5 ${editing ? 'bg-neutral-900 text-white' : 'bg-white/95 text-neutral-800'}`}
+              >
+                {editing ? 'Editing' : 'Edit map'}
+              </button>
             </div>
-          </div>
-          {offline.showIndicator ? (
-            <p className="rounded-2xl bg-white px-3 py-2 text-sm font-medium text-neutral-950 shadow-md ring-1 ring-neutral-300" role="status">
-              {offline.text}
-            </p>
-          ) : null}
-          {visitorMode ? null : (
+            {offline.showIndicator ? (
+              <p className="rounded-2xl bg-white px-3 py-2 text-sm font-medium text-neutral-950 shadow-md ring-1 ring-neutral-300" role="status">
+                {offline.text}
+              </p>
+            ) : null}
             <input
               type="search"
               placeholder="Search attractions"
               aria-label="Search attractions"
               title="Search is not available yet"
-              className="w-full rounded-2xl border-0 bg-white/95 px-4 py-3 text-base shadow-md ring-1 ring-black/5 outline-none"
+              className="min-h-11 w-full rounded-2xl border-0 bg-white/95 px-4 text-base text-neutral-950 shadow-md ring-1 ring-black/5 outline-none placeholder:text-neutral-600"
             />
-          )}
-        </div>
-      </header>
+          </div>
+        </header>
+      )}
       {visitorMode ? (
         <>
           <button
             type="button"
             onClick={locate}
-            className="visitor-raise pointer-events-auto absolute right-3 z-20 inline-flex min-h-11 items-center rounded-full bg-blue-800 px-4 text-sm font-semibold text-white shadow-md"
+            aria-label="Locate me"
+            className="visitor-raise pointer-events-auto absolute right-3 z-20 inline-flex size-11 items-center justify-center rounded-full bg-blue-800 text-white shadow-md"
           >
-            Locate me
+            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+            </svg>
           </button>
           <div
             ref={sheetRef}
             className="absolute inset-x-0 bottom-0 z-20 max-h-[46vh] overflow-y-auto pb-[max(0.5rem,env(safe-area-inset-bottom))]"
           >
-            <section aria-label="Destinations and navigation" className="mx-auto w-full max-w-lg shadow-lg ring-1 ring-black/10">
-              <p className={`bg-white px-4 pt-3 text-sm font-semibold ${locationExplanation.poorAccuracy ? 'text-amber-950' : 'text-neutral-950'}`} role="status">
-                {locationExplanation.title}. {locationExplanation.detail}
-              </p>
-              {baseline.status === 'error' ? (
-                <p className="bg-white px-4 pt-2 text-sm text-red-800" role="alert">
-                  {baseline.error}
-                </p>
-              ) : null}
+            <section aria-label="Destinations and navigation" className="mx-auto w-full max-w-lg overflow-hidden rounded-t-3xl bg-white shadow-lg ring-1 ring-black/10">
               <DestinationSearch
                 categories={categories}
                 showClosed={showClosed}
                 position={phase === 'available' ? position : null}
+                notice={{
+                  text: `${locationExplanation.title}. ${locationExplanation.detail}`,
+                  poorAccuracy: locationExplanation.poorAccuracy,
+                }}
+                alert={baseline.status === 'error' ? baseline.error : null}
                 onRoute={handleRoute}
                 onNavigatingChange={setGuideActive}
+                onListOpenChange={setDestinationsOpen}
               />
-              {guideActive ? null : (
+              {guideActive || !destinationsOpen ? null : (
                 <div className="bg-white px-3 pb-3">
                   <AttractionFilters
                     categories={categories}

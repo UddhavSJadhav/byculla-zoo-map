@@ -24,14 +24,20 @@ export function DestinationSearch({
   categories,
   showClosed,
   position,
+  notice,
+  alert,
   onRoute,
   onNavigatingChange,
+  onListOpenChange,
 }: {
   categories: readonly AttractionCategory[]
   showClosed: boolean
   position: GeoPosition | null
+  notice: { text: string; poorAccuracy: boolean } | null
+  alert: string | null
   onRoute: (update: RouteUpdate) => void
   onNavigatingChange?: (navigating: boolean) => void
+  onListOpenChange?: (open: boolean) => void
 }) {
   const attractions = useAttractions()
   const entrances = useEntrances()
@@ -40,7 +46,7 @@ export function DestinationSearch({
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [usingGps, setUsingGps] = useState(false)
   const [navigating, setNavigating] = useState(false)
-  const [listOpen, setListOpen] = useState(true)
+  const [listOpen, setListOpen] = useState(false)
   const [banner, setBanner] = useState<string | null>(null)
   const [acceptedFix, setAcceptedFix] = useState<RouteFix | null>(null)
   const [navigation, setNavigation] = useState<NavigationSession | null>(null)
@@ -100,6 +106,9 @@ export function DestinationSearch({
   useEffect(() => {
     onNavigatingChange?.(navigating)
   }, [navigating, onNavigatingChange])
+  useEffect(() => {
+    onListOpenChange?.(listOpen)
+  }, [listOpen, onListOpenChange])
   const guidance = advanced?.guidance ?? null
   const recalcMessage = session?.recalcMessage ?? null
   const warning = accuracyWarning(position?.accuracy ?? null)
@@ -141,17 +150,39 @@ export function DestinationSearch({
   }
 
   return (
-    <div className="flex flex-col rounded-t-3xl bg-white text-neutral-950">
+    <div className="flex flex-col bg-white text-neutral-950">
+      <button
+        type="button"
+        aria-expanded={listOpen}
+        aria-label={listOpen ? 'Hide destinations' : 'Show destinations'}
+        onClick={() => setListOpen((current) => !current)}
+        className="flex min-h-11 w-full items-center justify-center"
+      >
+        <span className="h-1.5 w-10 rounded-full bg-neutral-400" />
+      </button>
+      {notice ? (
+        <p className={`px-4 text-sm font-semibold ${notice.poorAccuracy ? 'text-amber-950' : 'text-neutral-950'}`} role="status">
+          {notice.text}
+        </p>
+      ) : null}
+      {alert ? (
+        <p className="px-4 pt-2 text-sm text-red-800" role="alert">
+          {alert}
+        </p>
+      ) : null}
       {!navigating || listOpen ? (
+        <input
+          type="search"
+          value={query}
+          placeholder="Search attractions"
+          aria-label="Search attractions"
+          onChange={(event) => setQuery(event.target.value)}
+          onFocus={() => setListOpen(true)}
+          className="min-h-11 w-full rounded-none border-0 bg-transparent px-4 py-3 text-base text-neutral-950 outline-none placeholder:text-neutral-600"
+        />
+      ) : null}
+      {listOpen ? (
         <>
-          <input
-            type="search"
-            value={query}
-            placeholder="Search attractions"
-            aria-label="Search attractions"
-            onChange={(event) => setQuery(event.target.value)}
-            className="min-h-11 w-full rounded-none border-0 bg-transparent px-4 py-3 text-base text-neutral-950 outline-none"
-          />
           <ul className="max-h-52 overflow-y-auto border-t border-neutral-200" aria-label="Destinations">
             {matches.length === 0 ? (
               <li className="px-4 py-3 text-sm text-neutral-600">No attractions match.</li>

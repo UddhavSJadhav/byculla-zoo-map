@@ -13,7 +13,7 @@ export function AttractionFilters({
   onToggleClosed: () => void
 }) {
   return (
-    <div className="flex flex-wrap gap-1.5" role="group" aria-label="Attraction filters">
+    <div className="flex gap-1.5 overflow-x-auto pb-1" role="group" aria-label="Attraction filters">
       {attractionCategories.map((category) => {
         const selected = categories.includes(category.id)
         return (
@@ -22,7 +22,7 @@ export function AttractionFilters({
             type="button"
             aria-pressed={selected}
             onClick={() => onToggleCategory(category.id)}
-            className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold ring-1 ring-neutral-300 ${selected ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-950'}`}
+            className={`inline-flex min-h-11 shrink-0 items-center gap-1.5 rounded-full px-3 text-sm font-semibold ring-1 ring-neutral-300 ${selected ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-950'}`}
           >
             <span className="inline-flex size-4 items-center justify-center rounded-full text-[10px] text-white" style={{ background: categoryPresentation[category.id].color }}>
               {categoryPresentation[category.id].mark}
@@ -35,7 +35,7 @@ export function AttractionFilters({
         type="button"
         aria-pressed={showClosed}
         onClick={onToggleClosed}
-        className={`inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold ring-1 ring-neutral-300 ${showClosed ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-950'}`}
+        className={`inline-flex min-h-11 shrink-0 items-center rounded-full px-3 text-sm font-semibold ring-1 ring-neutral-300 ${showClosed ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-950'}`}
       >
         Show closed
       </button>

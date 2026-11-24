@@ -15,15 +15,17 @@ import {
 } from './experience.ts'
 
 test('a narrow visitor screen uses a bottom sheet and keeps the map full', () => {
-  const phone = visitorChrome({ admin: false, width: 390, navigating: false, listOpen: true })
+  const phone = visitorChrome({ admin: false, width: 390, navigating: false, listOpen: false })
   assert.equal(phone.mapFillsScreen, true)
   assert.equal(phone.searchPlacement, 'sheet')
   assert.equal(phone.sheet?.placement, 'bottom')
   assert.equal(phone.sheet?.width, 'full')
-  assert.equal(phone.sheet?.height, 'expanded')
+  assert.equal(phone.sheet?.height, 'peek')
   assert.ok(phone.sheet && phone.sheet.maxVh <= 50)
   assert.equal(phone.minTouchTargetPx, visitorTouchTargetPx)
   assert.ok(phone.minTouchTargetPx >= 44)
+  const expanded = visitorChrome({ admin: false, width: 390, navigating: false, listOpen: true })
+  assert.equal(expanded.sheet?.height, 'expanded')
   const walking = visitorChrome({ admin: false, width: 390, navigating: true, listOpen: false })
   assert.equal(walking.sheet?.height, 'compact')
   assert.equal(walking.instructionProminent, true)

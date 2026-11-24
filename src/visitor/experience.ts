@@ -23,14 +23,14 @@ export function visitorChrome(input: { admin: boolean; width: number; navigating
       minTouchTargetPx: visitorTouchTargetPx,
     }
   }
-  const compact = input.navigating && !input.listOpen
+  const height = input.navigating && !input.listOpen ? ('compact' as const) : input.listOpen ? ('expanded' as const) : ('peek' as const)
   return {
     mode: 'visitor' as const,
     mapFillsScreen: true,
     sheet: {
       placement: 'bottom' as const,
       width: input.width < 768 ? ('full' as const) : ('capped' as const),
-      height: compact ? ('compact' as const) : ('expanded' as const),
+      height,
       maxVh: visitorSheetMaxVh,
     },
     searchPlacement: 'sheet' as const,

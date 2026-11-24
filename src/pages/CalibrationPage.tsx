@@ -125,7 +125,7 @@ export function CalibrationPage() {
         <div className="flex flex-wrap items-center justify-center gap-2">
           <MapSwitcher value={mapMode} onChange={setMapMode} />
           <a
-            href="#/"
+            href="/"
             className="rounded-full bg-white/95 px-3 py-1.5 text-sm font-medium text-neutral-700 shadow-md ring-1 ring-black/5"
           >
             Visitor map

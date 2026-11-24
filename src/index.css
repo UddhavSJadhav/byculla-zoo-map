@@ -41,8 +41,12 @@ body {
   left: 0.25rem;
 }
 
+.map-v2:not(.map-v2-visitor):not(.map-v2-editing) .maplibregl-ctrl-top-left {
+  top: var(--admin-header-offset, 7.5rem);
+}
+
 .map-v2-visitor .maplibregl-ctrl-top-left {
-  top: 4.25rem;
+  top: max(0.75rem, env(safe-area-inset-top));
 }
 
 .map-v2-visitor .maplibregl-ctrl-bottom-right,

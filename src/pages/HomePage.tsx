@@ -56,14 +56,14 @@ export function HomePage() {
         <div className="flex flex-wrap items-center justify-center gap-2">
           <MapSwitcher value={mapMode} onChange={setMapMode} />
           <a
-            href="#/map-v2"
+            href="/"
             className="rounded-full bg-white/95 px-3 py-1.5 text-sm font-medium text-neutral-700 shadow-md ring-1 ring-black/5"
           >
-            Map V2
+            Current map
           </a>
           {import.meta.env.DEV ? (
             <a
-              href="#/calibrate"
+              href="/calibrate"
               className="rounded-full bg-white/95 px-3 py-1.5 text-sm font-medium text-neutral-700 shadow-md ring-1 ring-black/5"
             >
               Calibrate
