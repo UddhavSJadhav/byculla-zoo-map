@@ -3,6 +3,7 @@ import type { Map, MapMouseEvent } from 'maplibre-gl'
 import { useAttractions } from '@/components/map-v2/attractions/useAttractions'
 import { attractionStatuses, type AttractionRecord } from '@/attractions/types'
 import { availabilityLabel, categoryLabel } from '@/attractions/visitor'
+import { placingEntranceId } from '@/entrances/store'
 import { attractionRegistryLayerIds } from '@/map-v2/attractionRegistryLayer'
 
 export function AttractionDetails({ map, enabled, visitor }: { map: Map | null; enabled: boolean; visitor: boolean }) {
@@ -15,6 +16,7 @@ export function AttractionDetails({ map, enabled, visitor }: { map: Map | null; 
   useEffect(() => {
     if (!map || !enabled) return
     const onClick = (event: MapMouseEvent) => {
+      if (placingEntranceId()) return
       const layers = attractionRegistryLayerIds.filter((id) => map.getLayer(id))
       if (layers.length === 0) {
         setAttractionIds([])

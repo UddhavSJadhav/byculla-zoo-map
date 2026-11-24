@@ -4,6 +4,8 @@ import { AttractionAdmin } from '@/components/map-v2/attractions/AttractionAdmin
 import { AttractionDetails } from '@/components/map-v2/attractions/AttractionDetails'
 import { AttractionFilters } from '@/components/map-v2/attractions/AttractionFilters'
 import { AttractionLayer } from '@/components/map-v2/attractions/AttractionLayer'
+import { DestinationSearch } from '@/components/map-v2/destinations/DestinationSearch'
+import { EntranceLayer } from '@/components/map-v2/entrances/EntranceLayer'
 import { PathAccessLayer } from '@/components/map-v2/paths/PathAccessLayer'
 import { PathAdmin } from '@/components/map-v2/paths/PathAdmin'
 import { PathLegend } from '@/components/map-v2/paths/PathLegend'
@@ -103,13 +105,21 @@ export function MapV2Page() {
               </p>
             </div>
           </div>
-          <input
-            type="search"
-            placeholder="Search attractions"
-            aria-label="Search attractions"
-            title="Search is not available yet"
-            className="w-full rounded-2xl border-0 bg-white/95 px-4 py-3 text-base shadow-md ring-1 ring-black/5 outline-none"
-          />
+          {visitorMode ? (
+            <DestinationSearch
+              categories={categories}
+              showClosed={showClosed}
+              position={phase === 'available' ? position : null}
+            />
+          ) : (
+            <input
+              type="search"
+              placeholder="Search attractions"
+              aria-label="Search attractions"
+              title="Search is not available yet"
+              className="w-full rounded-2xl border-0 bg-white/95 px-4 py-3 text-base shadow-md ring-1 ring-black/5 outline-none"
+            />
+          )}
           {visitorMode ? (
             <AttractionFilters
               categories={categories}
@@ -124,6 +134,7 @@ export function MapV2Page() {
       </header>
       <AttractionLayer map={map} visitor={visitorMode} categories={categories} showClosed={showClosed} />
       <AttractionDetails map={map} enabled={!editing} visitor={visitorMode} />
+      {import.meta.env.DEV ? <EntranceLayer map={map} active={managingAttractions} placingEnabled={!editing} /> : null}
       <PathAccessLayer
         map={map}
         visitor={visitorMode}

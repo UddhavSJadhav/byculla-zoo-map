@@ -12,6 +12,8 @@ import {
   attractionsUsingSource,
 } from '@/attractions/store'
 import { setCandidateHighlight } from '@/attractions/candidates'
+import { EntranceControls } from '@/components/map-v2/entrances/EntranceControls'
+import { exportEntrances, importEntrances } from '@/entrances/store'
 import { downloadJson } from '@/map-v2/editor/document'
 import { CandidateReview } from '@/components/map-v2/attractions/CandidateReview'
 import { useAttractionBaseline, useAttractions } from '@/components/map-v2/attractions/useAttractions'
@@ -50,6 +52,28 @@ export function AttractionAdmin({ onEditMap, docked }: { onEditMap: () => void; 
       }
       applyImport(text)
     })
+  }
+
+  const onEntranceImport = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    event.target.value = ''
+    if (!file) return
+    const reader = new FileReader()
+    reader.onload = () => {
+      const text = typeof reader.result === 'string' ? reader.result : ''
+      let parsed: unknown
+      try {
+        parsed = JSON.parse(text)
+      } catch {
+        setMessage(null)
+        setWarnings(['That file is not valid JSON.'])
+        return
+      }
+      const result = importEntrances(parsed, new Set(attractions.map((attraction) => attraction.id)))
+      setWarnings(result.warnings)
+      setMessage(result.applied > 0 ? `Imported ${result.applied} entrance${result.applied === 1 ? '' : 's'}.` : result.warnings[0] ?? 'Nothing was imported.')
+    }
+    reader.readAsText(file)
   }
 
   const applyImport = (text: string) => {
@@ -146,6 +170,7 @@ export function AttractionAdmin({ onEditMap, docked }: { onEditMap: () => void; 
             <AttractionForm
               key={selected.id}
               attraction={selected}
+              editing={docked}
               onMap={mapAttraction}
               onMessage={setMessage}
             />
@@ -185,9 +210,16 @@ export function AttractionAdmin({ onEditMap, docked }: { onEditMap: () => void; 
           <button type="button" onClick={() => downloadJson('byculla-zoo-attractions.geojson', exportAttractionCollection())} className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-medium">
             Export
           </button>
+          <button type="button" onClick={() => downloadJson('byculla-zoo-entrances.geojson', exportEntrances())} className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-medium">
+            Export entrances
+          </button>
           <label className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-medium">
             Import
             <input type="file" accept=".geojson,.json,application/geo+json,application/json" className="sr-only" onChange={onImport} />
+          </label>
+          <label className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-medium">
+            Import entrances
+            <input type="file" accept=".geojson,.json,application/geo+json,application/json" className="sr-only" onChange={onEntranceImport} />
           </label>
           <button type="button" onClick={() => setPendingReset(true)} className="rounded-full bg-neutral-100 px-2.5 py-1 text-[11px] font-medium">
             Reset
@@ -200,10 +232,12 @@ export function AttractionAdmin({ onEditMap, docked }: { onEditMap: () => void; 
 
 function AttractionForm({
   attraction,
+  editing,
   onMap,
   onMessage,
 }: {
   attraction: AttractionRecord
+  editing: boolean
   onMap: (attraction: AttractionRecord, mode: 'point' | 'polygon' | 'edit') => void
   onMessage: (message: string) => void
 }) {
@@ -283,6 +317,7 @@ function AttractionForm({
           </button>
         ) : null}
       </div>
+      <EntranceControls attractionId={attraction.id} editing={editing} />
       {pendingClear ? (
         <div className="rounded-xl bg-amber-50 p-2 text-[11px] text-amber-950">
           <p className="font-semibold">Remove this shape?</p>
