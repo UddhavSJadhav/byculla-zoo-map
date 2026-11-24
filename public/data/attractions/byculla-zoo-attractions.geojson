@@ -4,93 +4,7 @@
     {
       "type": "Feature",
       "id": "exhibit-1",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              72.834779,
-              18.9784093
-            ],
-            [
-              72.8348091,
-              18.9784348
-            ],
-            [
-              72.8348748,
-              18.9784759
-            ],
-            [
-              72.8349458,
-              18.9785082
-            ],
-            [
-              72.8350629,
-              18.9782972
-            ],
-            [
-              72.8349748,
-              18.9782535
-            ],
-            [
-              72.8349034,
-              18.978188
-            ],
-            [
-              72.8348546,
-              18.9781061
-            ],
-            [
-              72.8348323,
-              18.9780144
-            ],
-            [
-              72.8348384,
-              18.9779205
-            ],
-            [
-              72.8345904,
-              18.9779065
-            ],
-            [
-              72.8345822,
-              18.9779806
-            ],
-            [
-              72.8345848,
-              18.9780551
-            ],
-            [
-              72.8346008,
-              18.9781321
-            ],
-            [
-              72.8344554,
-              18.9781965
-            ],
-            [
-              72.834545,
-              18.9783759
-            ],
-            [
-              72.8346539,
-              18.9783273
-            ],
-            [
-              72.8346784,
-              18.9783164
-            ],
-            [
-              72.8347246,
-              18.9783668
-            ],
-            [
-              72.834779,
-              18.9784093
-            ]
-          ]
-        ]
-      },
+      "geometry": null,
       "properties": {
         "id": "exhibit-1",
         "name": "Aqua Birds",
@@ -99,7 +13,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "open",
         "geometrySource": "osm",
         "sourceFeatureId": "way/1052761696",
         "osmFeatureId": "attraction-1052761696",
@@ -111,33 +25,7 @@
     {
       "type": "Feature",
       "id": "exhibit-2",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              72.8352691,
-              18.9777083
-            ],
-            [
-              72.8354247,
-              18.9777314
-            ],
-            [
-              72.8354374,
-              18.9776552
-            ],
-            [
-              72.8352818,
-              18.9776321
-            ],
-            [
-              72.8352691,
-              18.9777083
-            ]
-          ]
-        ]
-      },
+      "geometry": null,
       "properties": {
         "id": "exhibit-2",
         "name": "Otter",
@@ -146,7 +34,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "closed",
         "geometrySource": "osm",
         "sourceFeatureId": "way/1006878423",
         "osmFeatureId": "attraction-1006878423",
@@ -197,7 +85,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "open",
         "geometrySource": "manual",
         "sourceFeatureId": null,
         "osmFeatureId": null,
@@ -256,37 +144,7 @@
     {
       "type": "Feature",
       "id": "exhibit-5",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              72.8360508,
-              18.9780363
-            ],
-            [
-              72.8360028,
-              18.977995
-            ],
-            [
-              72.8360491,
-              18.9779468
-            ],
-            [
-              72.8361062,
-              18.9778873
-            ],
-            [
-              72.8361543,
-              18.9779286
-            ],
-            [
-              72.8360508,
-              18.9780363
-            ]
-          ]
-        ]
-      },
+      "geometry": null,
       "properties": {
         "id": "exhibit-5",
         "name": "Turtle",
@@ -295,7 +153,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "open",
         "geometrySource": "osm",
         "sourceFeatureId": "way/1006878574",
         "osmFeatureId": "attraction-1006878574",
@@ -307,69 +165,7 @@
     {
       "type": "Feature",
       "id": "exhibit-6",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              72.8364109,
-              18.9777322
-            ],
-            [
-              72.8363658,
-              18.9776447
-            ],
-            [
-              72.8363443,
-              18.9776028
-            ],
-            [
-              72.8362177,
-              18.9775905
-            ],
-            [
-              72.8361227,
-              18.9776816
-            ],
-            [
-              72.8361629,
-              18.9777191
-            ],
-            [
-              72.8362285,
-              18.9776562
-            ],
-            [
-              72.8362501,
-              18.977698
-            ],
-            [
-              72.8363282,
-              18.9778498
-            ],
-            [
-              72.8365171,
-              18.9778682
-            ],
-            [
-              72.8366259,
-              18.9777639
-            ],
-            [
-              72.8365217,
-              18.9776667
-            ],
-            [
-              72.8364494,
-              18.977736
-            ],
-            [
-              72.8364109,
-              18.9777322
-            ]
-          ]
-        ]
-      },
+      "geometry": null,
       "properties": {
         "id": "exhibit-6",
         "name": "Birds Paradise",
@@ -378,7 +174,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "open",
         "geometrySource": "osm",
         "sourceFeatureId": "way/1006878421",
         "osmFeatureId": "attraction-1006878421",
@@ -445,7 +241,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "open",
         "geometrySource": "manual",
         "sourceFeatureId": null,
         "osmFeatureId": null,
@@ -499,97 +295,7 @@
     {
       "type": "Feature",
       "id": "exhibit-10",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              72.8370111,
-              18.9762337
-            ],
-            [
-              72.8370744,
-              18.9766617
-            ],
-            [
-              72.8370977,
-              18.9766586
-            ],
-            [
-              72.8371296,
-              18.9768743
-            ],
-            [
-              72.8374618,
-              18.9768304
-            ],
-            [
-              72.837436,
-              18.9766561
-            ],
-            [
-              72.8374841,
-              18.9766498
-            ],
-            [
-              72.837558,
-              18.97664
-            ],
-            [
-              72.8375629,
-              18.9766727
-            ],
-            [
-              72.8377978,
-              18.9766416
-            ],
-            [
-              72.8377625,
-              18.9764034
-            ],
-            [
-              72.8375307,
-              18.9764341
-            ],
-            [
-              72.8375442,
-              18.9765252
-            ],
-            [
-              72.8373381,
-              18.9765525
-            ],
-            [
-              72.8373194,
-              18.9764258
-            ],
-            [
-              72.8374193,
-              18.9764126
-            ],
-            [
-              72.8373989,
-              18.9762744
-            ],
-            [
-              72.83738,
-              18.9761466
-            ],
-            [
-              72.8371707,
-              18.9761743
-            ],
-            [
-              72.8371763,
-              18.9762118
-            ],
-            [
-              72.8370111,
-              18.9762337
-            ]
-          ]
-        ]
-      },
+      "geometry": null,
       "properties": {
         "id": "exhibit-10",
         "name": "Penguin",
@@ -598,7 +304,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "open",
         "geometrySource": "osm",
         "sourceFeatureId": "way/357092374",
         "osmFeatureId": "attraction-357092374",
@@ -610,33 +316,7 @@
     {
       "type": "Feature",
       "id": "exhibit-11",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              72.8382739,
-              18.9777927
-            ],
-            [
-              72.8381785,
-              18.9776423
-            ],
-            [
-              72.8381408,
-              18.9776637
-            ],
-            [
-              72.8382362,
-              18.9778141
-            ],
-            [
-              72.8382739,
-              18.9777927
-            ]
-          ]
-        ]
-      },
+      "geometry": null,
       "properties": {
         "id": "exhibit-11",
         "name": "Deer",
@@ -645,7 +325,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "open",
         "geometrySource": "osm",
         "sourceFeatureId": "way/1052761654",
         "osmFeatureId": "attraction-1052761654",
@@ -657,33 +337,7 @@
     {
       "type": "Feature",
       "id": "exhibit-12",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              72.8387982,
-              18.9788778
-            ],
-            [
-              72.8389484,
-              18.97887
-            ],
-            [
-              72.8389425,
-              18.9787686
-            ],
-            [
-              72.8387923,
-              18.9787764
-            ],
-            [
-              72.8387982,
-              18.9788778
-            ]
-          ]
-        ]
-      },
+      "geometry": null,
       "properties": {
         "id": "exhibit-12",
         "name": "Hippo",
@@ -692,7 +346,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "open",
         "geometrySource": "osm",
         "sourceFeatureId": "way/1052761657",
         "osmFeatureId": "attraction-1052761657",
@@ -713,7 +367,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "open",
         "geometrySource": null,
         "sourceFeatureId": null,
         "osmFeatureId": null,
@@ -725,33 +379,7 @@
     {
       "type": "Feature",
       "id": "exhibit-14",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              72.8375163,
-              18.9791529
-            ],
-            [
-              72.8378155,
-              18.9790934
-            ],
-            [
-              72.837806,
-              18.979051
-            ],
-            [
-              72.8375069,
-              18.9791106
-            ],
-            [
-              72.8375163,
-              18.9791529
-            ]
-          ]
-        ]
-      },
+      "geometry": null,
       "properties": {
         "id": "exhibit-14",
         "name": "Tiger",
@@ -760,7 +388,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "open",
         "geometrySource": "osm",
         "sourceFeatureId": "way/1052761671",
         "osmFeatureId": "attraction-1052761671",
@@ -807,7 +435,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "closed",
         "geometrySource": "manual",
         "sourceFeatureId": null,
         "osmFeatureId": null,
@@ -828,7 +456,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "open",
         "geometrySource": "osm",
         "sourceFeatureId": "way/1052761676",
         "osmFeatureId": "attraction-1052761676",
@@ -849,7 +477,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "open",
         "geometrySource": "osm",
         "sourceFeatureId": "way/1052761676",
         "osmFeatureId": "attraction-1052761676",
@@ -861,49 +489,7 @@
     {
       "type": "Feature",
       "id": "exhibit-18",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              72.836681,
-              18.9791274
-            ],
-            [
-              72.8367756,
-              18.9790483
-            ],
-            [
-              72.8370341,
-              18.9790483
-            ],
-            [
-              72.8370516,
-              18.9791375
-            ],
-            [
-              72.8370547,
-              18.9791533
-            ],
-            [
-              72.8370109,
-              18.9791615
-            ],
-            [
-              72.8370001,
-              18.9790868
-            ],
-            [
-              72.8367978,
-              18.9790869
-            ],
-            [
-              72.836681,
-              18.9791274
-            ]
-          ]
-        ]
-      },
+      "geometry": null,
       "properties": {
         "id": "exhibit-18",
         "name": "Bear",
@@ -912,7 +498,7 @@
         "description": "",
         "source": "Visitor map",
         "verified": false,
-        "status": "reference",
+        "status": "open",
         "geometrySource": "osm",
         "sourceFeatureId": "way/1052761670",
         "osmFeatureId": "attraction-1052761670",
@@ -924,41 +510,7 @@
     {
       "type": "Feature",
       "id": "exhibit-19",
-      "geometry": {
-        "type": "Polygon",
-        "coordinates": [
-          [
-            [
-              72.8361033,
-              18.9794671
-            ],
-            [
-              72.8363415,
-              18.9793997
-            ],
-            [
-              72.8362869,
-              18.979357
-            ],
-            [
-              72.8362112,
-              18.979321
-            ],
-            [
-              72.8361118,
-              18.9793053
-            ],
-            [
-              72.8359867,
-              18.9793163
-            ],
-            [
-              72.8361033,
-              18.9794671
-            ]
-          ]
-        ]
-      },
+      "geometry": null,
       "properties": {
         "id": "exhibit-19",
         "name": "Lion",

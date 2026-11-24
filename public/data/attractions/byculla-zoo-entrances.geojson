@@ -1,0 +1,261 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "exhibit-1",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83499250317317,
+          18.978411402729506
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-1",
+        "verified": true,
+        "lastEdited": "2026-11-24T11:51:30.611Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-10",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83748460484065,
+          18.97666342352666
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-10",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:07:01.667Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-11",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83813479780304,
+          18.97771634845155
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-11",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:07:03.735Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-12",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8388662564357,
+          18.97898189904471
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-12",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:07:07.299Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-13",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83925094950203,
+          18.979028012060937
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-13",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:07:09.200Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-14",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83797496047154,
+          18.979122799865607
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-14",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:07:13.566Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-15",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83759882685425,
+          18.978781278458925
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-15",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:07:45.218Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-16",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83765799504727,
+          18.978600185447718
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-16",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:07:48.316Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-17",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83763903130463,
+          18.97856688153186
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-17",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:07:53.151Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-18",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8369455001407,
+          18.979058754067907
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-18",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:07:55.634Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-19",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83605691333042,
+          18.979279080153034
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-19",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:07:57.532Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-2",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83532659299462,
+          18.977773389823014
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-2",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:06:28.902Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-3",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83565866735847,
+          18.978023770490367
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-3",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:06:32.467Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-5",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83615985198963,
+          18.9780673219055
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-5",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:06:48.300Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-6",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83611108807901,
+          18.977757338058765
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-6",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:06:50.585Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-7",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.83742229540007,
+          18.977283394713865
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-7",
+        "verified": true,
+        "lastEdited": "2026-11-24T12:06:54.001Z"
+      }
+    }
+  ]
+}

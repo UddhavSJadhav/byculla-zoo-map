@@ -1,5 +1,6 @@
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import { pathCatalog } from '@/paths/catalog'
+import { getPathAccessBaseline, loadPathAccessBaseline, resolvePathAccess } from '@/paths/baseline'
 import { pathAccessStatuses, type PathAccessStatus, type PathOverride, type PathRecord } from '@/paths/types'
 
 const storageKey = 'zoo-map.path-access.v1'
@@ -7,12 +8,14 @@ const storageKey = 'zoo-map.path-access.v1'
 interface StoredPathAccess {
   version: 1
   overrides: Record<string, PathOverride>
+  removed?: string[]
 }
 
 type Listener = () => void
 
 const listeners = new Set<Listener>()
 let cachedOverrides: Record<string, PathOverride> | null = null
+let cachedRemoved: string[] | null = null
 let cachedList: PathRecord[] | null = null
 
 function emptyStore(): StoredPathAccess {
@@ -20,19 +23,22 @@ function emptyStore(): StoredPathAccess {
 }
 
 function readStore(): StoredPathAccess {
-  if (cachedOverrides) return { version: 1, overrides: cachedOverrides }
+  if (cachedOverrides && cachedRemoved) return { version: 1, overrides: cachedOverrides, removed: cachedRemoved }
   try {
     const raw = localStorage.getItem(storageKey)
     if (!raw) {
       cachedOverrides = {}
+      cachedRemoved = []
       return emptyStore()
     }
     const parsed = JSON.parse(raw) as StoredPathAccess
     cachedOverrides = parsed && parsed.version === 1 && parsed.overrides && typeof parsed.overrides === 'object' ? sanitizeOverrides(parsed.overrides) : {}
+    cachedRemoved = parsed && Array.isArray(parsed.removed) ? parsed.removed.filter((id) => typeof id === 'string' && !(id in (cachedOverrides ?? {}))) : []
   } catch {
     cachedOverrides = {}
+    cachedRemoved = []
   }
-  return { version: 1, overrides: cachedOverrides }
+  return { version: 1, overrides: cachedOverrides, removed: cachedRemoved }
 }
 
 function sanitizeOverrides(value: Record<string, PathOverride>): Record<string, PathOverride> {
@@ -50,11 +56,21 @@ function sanitizeOverrides(value: Record<string, PathOverride>): Record<string, 
   return overrides
 }
 
-function writeStore(overrides: Record<string, PathOverride>) {
+function writeStore(overrides: Record<string, PathOverride>, removed: readonly string[] = []) {
   cachedOverrides = overrides
+  cachedRemoved = [...new Set(removed)]
   cachedList = null
-  if (Object.keys(overrides).length === 0) localStorage.removeItem(storageKey)
-  else localStorage.setItem(storageKey, JSON.stringify({ version: 1, overrides } satisfies StoredPathAccess))
+  if (Object.keys(overrides).length === 0 && cachedRemoved.length === 0) localStorage.removeItem(storageKey)
+  else {
+    const stored: StoredPathAccess = { version: 1, overrides }
+    if (cachedRemoved.length > 0) stored.removed = cachedRemoved
+    localStorage.setItem(storageKey, JSON.stringify(stored))
+  }
+  listeners.forEach((listener) => listener())
+}
+
+function publishBaseline() {
+  cachedList = null
   listeners.forEach((listener) => listener())
 }
 
@@ -67,14 +83,16 @@ export function subscribePaths(listener: Listener) {
 
 export function listPaths(): PathRecord[] {
   if (cachedList) return cachedList
-  const overrides = readStore().overrides
+  const stored = readStore()
+  const baseline = getPathAccessBaseline()
+  const removed = new Set(stored.removed ?? [])
   cachedList = pathCatalog.map((seed) => {
-    const override = overrides[seed.osmFeatureId]
+    const access = resolvePathAccess(seed.osmFeatureId, baseline, stored.overrides, removed)
     return {
       ...seed,
-      status: override?.status ?? 'unverified',
-      note: override?.note ?? '',
-      lastEdited: override?.lastEdited ?? null,
+      status: access.status,
+      note: access.note,
+      lastEdited: access.lastEdited,
     }
   })
   return cachedList
@@ -95,7 +113,8 @@ export function pathStatusCounts(): Record<PathAccessStatus, number> {
 }
 
 export function pathHasEdits(): boolean {
-  return Object.keys(readStore().overrides).length > 0
+  const stored = readStore()
+  return Object.keys(stored.overrides).length > 0 || (stored.removed?.length ?? 0) > 0
 }
 
 export function orphanedPathIds(): string[] {
@@ -108,16 +127,22 @@ export function updatePathAccess(id: string, patch: { status?: PathAccessStatus;
   if (!current) return 'That path is not in the OpenStreetMap walking-path data.'
   const status = patch.status ?? current.status
   const note = patch.note !== undefined ? patch.note.trim() : current.note
-  const next = { ...readStore().overrides }
-  if (status === 'unverified' && !note) delete next[current.osmFeatureId]
-  else {
+  const stored = readStore()
+  const next = { ...stored.overrides }
+  const removed = new Set(stored.removed ?? [])
+  if (status === 'unverified' && !note) {
+    delete next[current.osmFeatureId]
+    if (getPathAccessBaseline()[current.osmFeatureId]) removed.add(current.osmFeatureId)
+    else removed.delete(current.osmFeatureId)
+  } else {
     next[current.osmFeatureId] = {
       status,
       note,
       lastEdited: new Date().toISOString(),
     }
+    removed.delete(current.osmFeatureId)
   }
-  writeStore(next)
+  writeStore(next, [...removed])
   return null
 }
 
@@ -126,11 +151,10 @@ export function resetPathAccess() {
 }
 
 export function exportPathAccess(): FeatureCollection<null> {
-  const overrides = readStore().overrides
   return {
     type: 'FeatureCollection',
     features: listPaths()
-      .filter((path) => overrides[path.osmFeatureId])
+      .filter((path) => path.status !== 'unverified' || path.note.trim() !== '')
       .map((path) => ({
         type: 'Feature' as const,
         id: path.osmFeatureId,
@@ -153,7 +177,9 @@ export function importPathAccess(raw: unknown): { applied: number; warnings: str
   if (collection.type !== 'FeatureCollection' || !Array.isArray(collection.features)) {
     return { applied: 0, warnings: ['Choose a GeoJSON FeatureCollection.'] }
   }
-  const next = { ...readStore().overrides }
+  const stored = readStore()
+  const next = { ...stored.overrides }
+  const removed = new Set(stored.removed ?? [])
   let applied = 0
   for (const feature of collection.features) {
     const result = overrideFromFeature(feature)
@@ -161,12 +187,17 @@ export function importPathAccess(raw: unknown): { applied: number; warnings: str
       warnings.push(result)
       continue
     }
-    if (result.override.status === 'unverified' && !result.override.note) delete next[result.id]
-    else next[result.id] = result.override
+    if (result.override.status === 'unverified' && !result.override.note) {
+      delete next[result.id]
+      if (getPathAccessBaseline()[result.id]) removed.add(result.id)
+    } else {
+      next[result.id] = result.override
+      removed.delete(result.id)
+    }
     applied += 1
   }
   if (applied === 0) return { applied, warnings: warnings.length > 0 ? warnings : ['Nothing in that file matched a walking path.'] }
-  writeStore(next)
+  writeStore(next, [...removed])
   return { applied, warnings }
 }
 
@@ -190,4 +221,10 @@ function overrideFromFeature(feature: Feature<Geometry | null>): { id: string; o
 
 function isStatus(value: unknown): value is PathAccessStatus {
   return pathAccessStatuses.some((status) => status.id === value)
+}
+
+if (typeof window !== 'undefined') {
+  void loadPathAccessBaseline(pathCatalog).then(() => {
+    publishBaseline()
+  })
 }

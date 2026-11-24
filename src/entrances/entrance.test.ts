@@ -1,9 +1,12 @@
 import assert from 'node:assert/strict'
+import { readFileSync } from 'node:fs'
 import test from 'node:test'
+import { attractionRegistry } from '../attractions/registry.ts'
+import { buildWalkingGraph } from '../routing/graph.ts'
+import { parseEntranceBaseline } from './baseline.ts'
 import { entranceReadiness, entranceStatusText } from './connection.ts'
 import { createEntranceStore, type EntranceStore } from './store.ts'
-import type { EntranceStorage } from './types.ts'
-import { buildWalkingGraph } from '../routing/graph.ts'
+import type { EntranceRecord, EntranceStorage } from './types.ts'
 
 function memory(): EntranceStorage {
   const jar = new Map<string, string>()
@@ -92,6 +95,45 @@ test('export and import carry entrance points without attraction geometry', () =
   assert.equal(imported.get('exhibit-14')?.verified, true)
   assert.equal(imported.get('exhibit-16'), null)
   assert.equal(JSON.stringify(imported.exportCollection()).includes('Polygon'), false)
+})
+
+test('the public entrance file provides visitor entrances', () => {
+  const raw = JSON.parse(readFileSync(new URL('../../public/data/attractions/byculla-zoo-entrances.geojson', import.meta.url), 'utf8'))
+  const records = parseEntranceBaseline(raw, new Set(attractionRegistry.map((attraction) => attraction.id)))
+  assert.equal(records['exhibit-1']?.verified, true)
+  assert.ok(records['exhibit-14'])
+  assert.equal(Object.keys(records).length, raw.features.length)
+})
+
+test('a saved edit overrides a public entrance and removal keeps it hidden', () => {
+  const jar = new Map<string, string>()
+  const storage: EntranceStorage = {
+    getItem: (key) => jar.get(key) ?? null,
+    setItem: (key, value) => {
+      jar.set(key, value)
+    },
+    removeItem: (key) => {
+      jar.delete(key)
+    },
+  }
+  const published: Record<string, EntranceRecord> = {
+    'exhibit-14': {
+      attractionId: 'exhibit-14',
+      coordinates: [72.8, 18.9],
+      verified: true,
+      lastEdited: '2026-11-24T00:00:00.000Z',
+    },
+  }
+  const entrances = createEntranceStore(storage, () => published)
+  assert.deepEqual(entrances.get('exhibit-14')?.coordinates, [72.8, 18.9])
+  assert.equal(jar.has('zoo-map.entrances.v1'), false)
+  entrances.set('exhibit-14', [72.1, 18.2])
+  assert.equal(entrances.get('exhibit-14')?.verified, false)
+  entrances.reload()
+  assert.deepEqual(entrances.get('exhibit-14')?.coordinates, [72.1, 18.2])
+  assert.equal(entrances.remove('exhibit-14'), null)
+  entrances.reload()
+  assert.equal(entrances.get('exhibit-14'), null)
 })
 
 test('refresh keeps the entrance that was saved', () => {

@@ -138,7 +138,7 @@ export function PathAdmin({
         {pendingReset ? (
           <Confirm
             title="Reset path access?"
-            body="This removes path status and notes stored in this browser. The OpenStreetMap paths stay unchanged."
+            body="This removes path status and notes stored in this browser. Saved path access from the project file stays. OpenStreetMap paths stay unchanged."
             confirmLabel="Reset"
             onConfirm={() => {
               resetPathAccess()

@@ -1,0 +1,569 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "way-53369530",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-53369530",
+        "sourceId": "way/53369530",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:09:53.049Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-53369533",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-53369533",
+        "sourceId": "way/53369533",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:10:03.098Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-996182190",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-996182190",
+        "sourceId": "way/996182190",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:10:16.633Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761649",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761649",
+        "sourceId": "way/1052761649",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:10:34.650Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761650",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761650",
+        "sourceId": "way/1052761650",
+        "status": "restricted",
+        "note": "",
+        "lastEdited": "2026-11-24T12:10:51.883Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761651",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761651",
+        "sourceId": "way/1052761651",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:11:20.282Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761656",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761656",
+        "sourceId": "way/1052761656",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:11:23.399Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761659",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761659",
+        "sourceId": "way/1052761659",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:11:37.650Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761660",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761660",
+        "sourceId": "way/1052761660",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:11:57.581Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761663",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761663",
+        "sourceId": "way/1052761663",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:12:37.157Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761664",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761664",
+        "sourceId": "way/1052761664",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:12:45.125Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761665",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761665",
+        "sourceId": "way/1052761665",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:12:52.957Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761667",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761667",
+        "sourceId": "way/1052761667",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:13:06.690Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761673",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761673",
+        "sourceId": "way/1052761673",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:13:13.090Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761674",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761674",
+        "sourceId": "way/1052761674",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:13:23.123Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761675",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761675",
+        "sourceId": "way/1052761675",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:13:32.340Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761677",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761677",
+        "sourceId": "way/1052761677",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:13:39.305Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761678",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761678",
+        "sourceId": "way/1052761678",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:13:44.656Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761679",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761679",
+        "sourceId": "way/1052761679",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:13:48.589Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761680",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761680",
+        "sourceId": "way/1052761680",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:13:57.756Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761681",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761681",
+        "sourceId": "way/1052761681",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:14:04.556Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761682",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761682",
+        "sourceId": "way/1052761682",
+        "status": "restricted",
+        "note": "",
+        "lastEdited": "2026-11-24T12:14:15.606Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761683",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761683",
+        "sourceId": "way/1052761683",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:14:31.889Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761684",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761684",
+        "sourceId": "way/1052761684",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:14:45.040Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761685",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761685",
+        "sourceId": "way/1052761685",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:14:49.772Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761686",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761686",
+        "sourceId": "way/1052761686",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:14:55.006Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761687",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761687",
+        "sourceId": "way/1052761687",
+        "status": "restricted",
+        "note": "",
+        "lastEdited": "2026-11-24T12:15:04.772Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761688",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761688",
+        "sourceId": "way/1052761688",
+        "status": "restricted",
+        "note": "",
+        "lastEdited": "2026-11-24T12:15:16.272Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761689",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761689",
+        "sourceId": "way/1052761689",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:15:22.323Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761690",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761690",
+        "sourceId": "way/1052761690",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:15:28.958Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761691",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761691",
+        "sourceId": "way/1052761691",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:15:33.089Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1052761692",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1052761692",
+        "sourceId": "way/1052761692",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:15:36.456Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1104696782",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1104696782",
+        "sourceId": "way/1104696782",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:15:51.774Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1104696783",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1104696783",
+        "sourceId": "way/1104696783",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:16:02.974Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1104696785",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1104696785",
+        "sourceId": "way/1104696785",
+        "status": "restricted",
+        "note": "",
+        "lastEdited": "2026-11-24T12:16:09.588Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1104696786",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1104696786",
+        "sourceId": "way/1104696786",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:16:14.788Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1104696788",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1104696788",
+        "sourceId": "way/1104696788",
+        "status": "restricted",
+        "note": "",
+        "lastEdited": "2026-11-24T12:16:19.555Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1104696789",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1104696789",
+        "sourceId": "way/1104696789",
+        "status": "restricted",
+        "note": "",
+        "lastEdited": "2026-11-24T12:16:21.839Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1104696790",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1104696790",
+        "sourceId": "way/1104696790",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:16:27.288Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1112636389",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1112636389",
+        "sourceId": "way/1112636389",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:16:31.790Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1112637129",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1112637129",
+        "sourceId": "way/1112637129",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:16:37.904Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1112637130",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1112637130",
+        "sourceId": "way/1112637130",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:16:42.589Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1112638055",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1112638055",
+        "sourceId": "way/1112638055",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:17:08.710Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1112638554",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1112638554",
+        "sourceId": "way/1112638554",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-24T12:17:11.571Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1189086474",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1189086474",
+        "sourceId": "way/1189086474",
+        "status": "restricted",
+        "note": "",
+        "lastEdited": "2026-11-24T12:17:16.173Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1457471873",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1457471873",
+        "sourceId": "way/1457471873",
+        "status": "restricted",
+        "note": "",
+        "lastEdited": "2026-11-24T12:17:19.257Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "way-1458674573",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1458674573",
+        "sourceId": "way/1458674573",
+        "status": "restricted",
+        "note": "",
+        "lastEdited": "2026-11-24T12:17:22.056Z"
+      }
+    }
+  ]
+}
