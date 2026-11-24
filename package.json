@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "test": "node --experimental-strip-types --test src/routing/route.test.ts src/routing/navigate.test.ts src/routing/guidance.test.ts src/entrances/entrance.test.ts src/destinations/readiness.test.ts",
+    "test": "node --experimental-strip-types --test src/routing/route.test.ts src/routing/navigate.test.ts src/routing/guidance.test.ts src/visitor/experience.test.ts src/entrances/entrance.test.ts src/destinations/readiness.test.ts",
     "preview": "vite preview"
   },
   "dependencies": {

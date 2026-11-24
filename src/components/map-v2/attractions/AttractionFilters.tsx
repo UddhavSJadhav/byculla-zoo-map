@@ -22,7 +22,7 @@ export function AttractionFilters({
             type="button"
             aria-pressed={selected}
             onClick={() => onToggleCategory(category.id)}
-            className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold shadow-md ring-1 ring-black/5 ${selected ? 'bg-neutral-900 text-white' : 'bg-white/95 text-neutral-700'}`}
+            className={`inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm font-semibold ring-1 ring-neutral-300 ${selected ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-950'}`}
           >
             <span className="inline-flex size-4 items-center justify-center rounded-full text-[10px] text-white" style={{ background: categoryPresentation[category.id].color }}>
               {categoryPresentation[category.id].mark}
@@ -35,7 +35,7 @@ export function AttractionFilters({
         type="button"
         aria-pressed={showClosed}
         onClick={onToggleClosed}
-        className={`rounded-full px-2.5 py-1 text-xs font-semibold shadow-md ring-1 ring-black/5 ${showClosed ? 'bg-neutral-900 text-white' : 'bg-white/95 text-neutral-700'}`}
+        className={`inline-flex min-h-11 items-center rounded-full px-3 text-sm font-semibold ring-1 ring-neutral-300 ${showClosed ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-950'}`}
       >
         Show closed
       </button>

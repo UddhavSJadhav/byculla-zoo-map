@@ -41,6 +41,15 @@ body {
   left: 0.25rem;
 }
 
+.map-v2-visitor .maplibregl-ctrl-top-left {
+  top: 4.25rem;
+}
+
+.map-v2-visitor .maplibregl-ctrl-bottom-right,
+.map-v2-visitor .visitor-raise {
+  bottom: var(--visitor-sheet-offset, 14rem);
+}
+
 .map-v2-editing .maplibregl-ctrl-top-left {
   top: 11rem;
 }

@@ -1,5 +1,6 @@
 import type { Feature, FeatureCollection, Geometry } from 'geojson'
 import { validateGeometry } from '@/map-v2/editor/geometry'
+import { readBaselineCache, saveBaselineCache, type BaselineCacheStorage } from '@/visitor/baselineCache'
 import {
   attractionCategories,
   attractionStatuses,
@@ -24,6 +25,11 @@ const listeners = new Set<Listener>()
 let snapshot: AttractionBaselineState = { status: 'loading', error: null, warnings: [] }
 let records: AttractionRecord[] | null = null
 let request: Promise<void> | null = null
+let fromCache = false
+
+export function baselineServedFromCache(): boolean {
+  return fromCache
+}
 
 export function getBaselineState(): AttractionBaselineState {
   return snapshot
@@ -53,11 +59,31 @@ export function loadAttractionBaseline(): Promise<void> {
       }
       const parsed = parseAttractionBaseline(raw)
       if ('error' in parsed) throw new Error(parsed.error)
+      fromCache = false
       records = parsed.records
       snapshot = { status: 'ready', error: null, warnings: parsed.warnings }
+      const storage = baselineCacheStorage()
+      if (storage) saveBaselineCache(raw, storage)
       publish()
     })
     .catch((error: unknown) => {
+      const restored = restoreCachedBaseline()
+      if (restored) {
+        fromCache = true
+        records = restored.records
+        snapshot = {
+          status: 'ready',
+          error: null,
+          warnings: [...restored.warnings, 'Showing saved attraction details while offline.'],
+        }
+        publish()
+        return
+      }
+      if (records) {
+        publish()
+        return
+      }
+      fromCache = false
       records = null
       snapshot = {
         status: 'error',
@@ -67,6 +93,30 @@ export function loadAttractionBaseline(): Promise<void> {
       publish()
     })
   return request
+}
+
+export function retryAttractionBaseline(): Promise<void> {
+  request = null
+  return loadAttractionBaseline()
+}
+
+function restoreCachedBaseline(): { records: AttractionRecord[]; warnings: string[] } | null {
+  const storage = baselineCacheStorage()
+  if (!storage) return null
+  const raw = readBaselineCache(storage)
+  if (!raw) return null
+  const parsed = parseAttractionBaseline(raw)
+  if ('error' in parsed) return null
+  return parsed
+}
+
+function baselineCacheStorage(): BaselineCacheStorage | null {
+  try {
+    if (typeof localStorage === 'undefined') return null
+    return localStorage
+  } catch {
+    return null
+  }
 }
 
 export function parseAttractionBaseline(raw: unknown): { records: AttractionRecord[]; warnings: string[] } | { error: string } {

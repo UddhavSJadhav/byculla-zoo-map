@@ -15,18 +15,39 @@ import { MapEditor } from '@/components/map-v2/editor/MapEditor'
 import { ZooMap } from '@/components/map-v2/ZooMap'
 import type { Map } from 'maplibre-gl'
 import { extractedDatasets, mappedNotLayered, missingGeography } from '@/data/map-v2/availability'
+import { mapSources } from '@/data/map-v2/sources'
 import { layerSwatches } from '@/map-v2/layers'
 import { useAttractionBaseline } from '@/components/map-v2/attractions/useAttractions'
+import { baselineServedFromCache, retryAttractionBaseline } from '@/attractions/baseline'
 import { useGeolocation } from '@/hooks/useGeolocation'
+import { visitorWalkingGraph } from '@/routing/visitorGraph'
 import { isLowAccuracy } from '@/services/geolocation'
+import { describeOffline, nextLocationNotice, visitorLocationExplanation } from '@/visitor/experience'
 import { attractionCategories, type AttractionCategory } from '@/attractions/types'
 import { mapLayerIds, type MapLayerId } from '@/types/map-v2'
 
 const initialLayers = Object.fromEntries(mapLayerIds.map((id) => [id, true])) as Record<MapLayerId, boolean>
 
 export function MapV2Page() {
-  const { phase, position, message, fixCount, requestLocation } = useGeolocation()
+  const { phase, position, message, fixCount, requestLocation, wait, errorKind } = useGeolocation()
   const baseline = useAttractionBaseline()
+  const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine))
+  const [notice, setNotice] = useState({ phase, recovered: false })
+  const [guideActive, setGuideActive] = useState(false)
+  if (notice.phase !== phase) setNotice(nextLocationNotice(notice, phase))
+  const locationExplanation = visitorLocationExplanation({
+    phase,
+    wait: phase === 'waiting' ? wait : null,
+    errorKind,
+    accuracy: phase === 'available' && position ? position.accuracy : null,
+    recovered: notice.recovered,
+  })
+  const offline = describeOffline({
+    online,
+    attractionMetadataCached: baseline.status === 'ready',
+    pathGeometriesCached: mapSources.paths.features.length > 0,
+    graphReconstructed: visitorWalkingGraph().nodes != null,
+  })
   const [layers, setLayers] = useState(initialLayers)
   const [map, setMap] = useState<Map | null>(null)
   const [editing, setEditing] = useState(false)
@@ -56,6 +77,36 @@ export function MapV2Page() {
     setFocusRequestId((current) => current + 1)
   }, [awaitingFix, fixCount, position])
 
+  const sheetRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const update = () => {
+      const next = navigator.onLine
+      setOnline(next)
+      if (next && (baseline.status === 'error' || baselineServedFromCache())) retryAttractionBaseline()
+    }
+    window.addEventListener('online', update)
+    window.addEventListener('offline', update)
+    return () => {
+      window.removeEventListener('online', update)
+      window.removeEventListener('offline', update)
+    }
+  }, [baseline.status])
+
+  useEffect(() => {
+    const node = sheetRef.current
+    const root = node?.closest('.map-v2')
+    if (!visitorMode || !(node instanceof HTMLElement) || !(root instanceof HTMLElement)) return
+    const apply = () => root.style.setProperty('--visitor-sheet-offset', `${node.offsetHeight + 12}px`)
+    apply()
+    const observer = new ResizeObserver(apply)
+    observer.observe(node)
+    return () => {
+      observer.disconnect()
+      root.style.removeProperty('--visitor-sheet-offset')
+    }
+  }, [visitorMode, guideActive])
+
   const locate = () => {
     fixCountAtStart.current = fixCount
     setAwaitingFix(true)
@@ -64,7 +115,7 @@ export function MapV2Page() {
   }
 
   return (
-    <div className={`map-v2 relative h-dvh w-full overflow-hidden bg-[#f4ead7] text-neutral-900${editing ? ' map-v2-editing' : ''}`}>
+    <div className={`map-v2 relative h-dvh w-full overflow-hidden bg-[#f4ead7] text-neutral-900${visitorMode ? ' map-v2-visitor' : ''}${editing ? ' map-v2-editing' : ''}`}>
       <ZooMap position={position} focusRequestId={focusRequestId} layers={layers} onMapReady={setMap} />
       <header className="pointer-events-none absolute inset-x-0 top-0 z-10 px-3 pt-[max(0.75rem,env(safe-area-inset-top))]">
         <div className="pointer-events-auto mx-auto flex max-w-3xl flex-col gap-2">
@@ -115,14 +166,12 @@ export function MapV2Page() {
               </p>
             </div>
           </div>
-          {visitorMode ? (
-            <DestinationSearch
-              categories={categories}
-              showClosed={showClosed}
-              position={phase === 'available' ? position : null}
-              onRoute={handleRoute}
-            />
-          ) : (
+          {offline.showIndicator ? (
+            <p className="rounded-2xl bg-white px-3 py-2 text-sm font-medium text-neutral-950 shadow-md ring-1 ring-neutral-300" role="status">
+              {offline.text}
+            </p>
+          ) : null}
+          {visitorMode ? null : (
             <input
               type="search"
               placeholder="Search attractions"
@@ -131,18 +180,53 @@ export function MapV2Page() {
               className="w-full rounded-2xl border-0 bg-white/95 px-4 py-3 text-base shadow-md ring-1 ring-black/5 outline-none"
             />
           )}
-          {visitorMode ? (
-            <AttractionFilters
-              categories={categories}
-              showClosed={showClosed}
-              onToggleCategory={(category) =>
-                setCategories((current) => (current.includes(category) ? current.filter((item) => item !== category) : [...current, category]))
-              }
-              onToggleClosed={() => setShowClosed((current) => !current)}
-            />
-          ) : null}
         </div>
       </header>
+      {visitorMode ? (
+        <>
+          <button
+            type="button"
+            onClick={locate}
+            className="visitor-raise pointer-events-auto absolute right-3 z-20 inline-flex min-h-11 items-center rounded-full bg-blue-800 px-4 text-sm font-semibold text-white shadow-md"
+          >
+            Locate me
+          </button>
+          <div
+            ref={sheetRef}
+            className="absolute inset-x-0 bottom-0 z-20 max-h-[46vh] overflow-y-auto pb-[max(0.5rem,env(safe-area-inset-bottom))]"
+          >
+            <section aria-label="Destinations and navigation" className="mx-auto w-full max-w-lg shadow-lg ring-1 ring-black/10">
+              <p className={`bg-white px-4 pt-3 text-sm font-semibold ${locationExplanation.poorAccuracy ? 'text-amber-950' : 'text-neutral-950'}`} role="status">
+                {locationExplanation.title}. {locationExplanation.detail}
+              </p>
+              {baseline.status === 'error' ? (
+                <p className="bg-white px-4 pt-2 text-sm text-red-800" role="alert">
+                  {baseline.error}
+                </p>
+              ) : null}
+              <DestinationSearch
+                categories={categories}
+                showClosed={showClosed}
+                position={phase === 'available' ? position : null}
+                onRoute={handleRoute}
+                onNavigatingChange={setGuideActive}
+              />
+              {guideActive ? null : (
+                <div className="bg-white px-3 pb-3">
+                  <AttractionFilters
+                    categories={categories}
+                    showClosed={showClosed}
+                    onToggleCategory={(category) =>
+                      setCategories((current) => (current.includes(category) ? current.filter((item) => item !== category) : [...current, category]))
+                    }
+                    onToggleClosed={() => setShowClosed((current) => !current)}
+                  />
+                </div>
+              )}
+            </section>
+          </div>
+        </>
+      ) : null}
       <AttractionLayer map={map} visitor={visitorMode} categories={categories} showClosed={showClosed} />
       {visitorMode ? <RouteLayer map={map} geometry={routeGeometry} fitToken={routeFitToken} /> : null}
       <AttractionDetails map={map} enabled={!editing} visitor={visitorMode} />
@@ -168,7 +252,7 @@ export function MapV2Page() {
         />
       ) : null}
       {import.meta.env.DEV ? <MapEditor map={map} editing={editing} /> : null}
-      <div className="pointer-events-none absolute right-3 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex w-[min(22rem,calc(100%-1.5rem))] flex-col items-end gap-2">
+      {visitorMode ? null : <div className="pointer-events-none absolute right-3 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex w-[min(22rem,calc(100%-1.5rem))] flex-col items-end gap-2">
         <button
           type="button"
           onClick={locate}
@@ -252,7 +336,7 @@ export function MapV2Page() {
             ) : null}
           </div>
         </details>
-      </div>
+      </div>}
     </div>
   )
 }

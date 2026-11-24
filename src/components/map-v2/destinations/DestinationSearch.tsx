@@ -8,6 +8,7 @@ import { destinationChoices } from '@/destinations/choices'
 import { destinationReadiness, destinationStatusDetail, destinationStatusLabel } from '@/destinations/readiness'
 import type { RouteSegment } from '@/routing/graph'
 import { accuracyWarning, advanceNavigation, type NavigationSession } from '@/routing/guidance'
+import { cancelNavigation, returnToMap } from '@/visitor/experience'
 import { visitorWalkingGraph } from '@/routing/visitorGraph'
 import { shouldRecalculateRoute, type RouteFix } from '@/routing/walk'
 import type { AttractionCategory } from '@/attractions/types'
@@ -24,11 +25,13 @@ export function DestinationSearch({
   showClosed,
   position,
   onRoute,
+  onNavigatingChange,
 }: {
   categories: readonly AttractionCategory[]
   showClosed: boolean
   position: GeoPosition | null
   onRoute: (update: RouteUpdate) => void
+  onNavigatingChange?: (navigating: boolean) => void
 }) {
   const attractions = useAttractions()
   const entrances = useEntrances()
@@ -37,7 +40,7 @@ export function DestinationSearch({
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [usingGps, setUsingGps] = useState(false)
   const [navigating, setNavigating] = useState(false)
-  const [mapReturned, setMapReturned] = useState(false)
+  const [listOpen, setListOpen] = useState(true)
   const [banner, setBanner] = useState<string | null>(null)
   const [acceptedFix, setAcceptedFix] = useState<RouteFix | null>(null)
   const [navigation, setNavigation] = useState<NavigationSession | null>(null)
@@ -94,6 +97,9 @@ export function DestinationSearch({
   if (navigating && session !== navigation) setNavigation(session)
   if (!navigating && navigation !== null) setNavigation(null)
   const line = session?.line ?? null
+  useEffect(() => {
+    onNavigatingChange?.(navigating)
+  }, [navigating, onNavigatingChange])
   const guidance = advanced?.guidance ?? null
   const recalcMessage = session?.recalcMessage ?? null
   const warning = accuracyWarning(position?.accuracy ?? null)
@@ -127,15 +133,16 @@ export function DestinationSearch({
   }, [onRoute])
 
   const clearRoute = (focusPosition: boolean) => {
-    setNavigating(false)
+    const next = cancelNavigation({ selectedId, navigating, listOpen })
+    setNavigating(next.navigating)
+    setListOpen(next.listOpen)
     setNavigation(null)
-    setMapReturned(false)
     onRoute({ geometry: null, fit: false, focusPosition })
   }
 
   return (
-    <div className="rounded-2xl bg-white/95 shadow-md ring-1 ring-black/5">
-      {mapReturned ? null : (
+    <div className="flex flex-col rounded-t-3xl bg-white text-neutral-950">
+      {!navigating || listOpen ? (
         <>
           <input
             type="search"
@@ -143,7 +150,7 @@ export function DestinationSearch({
             placeholder="Search attractions"
             aria-label="Search attractions"
             onChange={(event) => setQuery(event.target.value)}
-            className="w-full rounded-2xl border-0 bg-transparent px-4 py-3 text-base outline-none"
+            className="min-h-11 w-full rounded-none border-0 bg-transparent px-4 py-3 text-base text-neutral-950 outline-none"
           />
           <ul className="max-h-52 overflow-y-auto border-t border-neutral-200" aria-label="Destinations">
             {matches.length === 0 ? (
@@ -163,7 +170,7 @@ export function DestinationSearch({
                         }
                         setSelectedId(attraction.id)
                       }}
-                      className={`flex w-full items-baseline justify-between gap-3 px-4 py-2 text-left ${pressed ? 'bg-neutral-900 text-white' : 'hover:bg-neutral-50'}`}
+                      className={`flex min-h-11 w-full items-center justify-between gap-3 px-4 py-2 text-left ${pressed ? 'bg-neutral-900 text-white' : 'bg-white text-neutral-950 hover:bg-neutral-50'}`}
                     >
                       <span className="text-sm font-semibold">
                         {attraction.exhibitNumber}. {attraction.name}
@@ -178,20 +185,39 @@ export function DestinationSearch({
             )}
           </ul>
         </>
-      )}
+      ) : null}
       {selected && readiness ? (
-        <div className="space-y-2 border-t border-neutral-200 px-4 py-3" role="status">
-          <p className="text-sm font-semibold">{title}</p>
-          <p className="text-xs leading-5 text-neutral-600">{detail}</p>
-          {showDirection ? <p className="text-sm text-neutral-800">{guidance.direction.text}</p> : null}
-          {warning ? <p className="text-xs font-medium text-amber-800">{warning}</p> : null}
+        <div className={`space-y-2 border-t border-neutral-200 px-4 py-3 ${navigating ? 'order-first border-t-0' : ''}`} role="status">
+          {navigating ? (
+            <>
+              <p className="text-xs font-semibold tracking-wide text-neutral-700 uppercase">To {guidance?.headline ?? selected.name}</p>
+              {guidance?.arrived ? (
+                <p className="text-2xl font-semibold text-neutral-950">You have reached the entrance.</p>
+              ) : recalcMessage ? (
+                <p className="text-lg font-semibold text-neutral-950">{recalcMessage}</p>
+              ) : (
+                <>
+                  <p className="text-3xl font-semibold text-neutral-950 tabular-nums">
+                    {guidance?.progress ? `${Math.round(guidance.progress.remainingMeters)} m` : detail}
+                  </p>
+                  <p className="text-lg font-semibold text-neutral-950">{showDirection ? guidance.direction.text : detail}</p>
+                </>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="text-base font-semibold text-neutral-950">{title}</p>
+              <p className="text-sm leading-5 text-neutral-800">{detail}</p>
+            </>
+          )}
+          {warning ? <p className="text-sm font-medium text-amber-950">{warning}</p> : null}
           <div className="flex flex-wrap items-center gap-2">
             {navigating ? null : (
               <button
                 type="button"
                 disabled={live == null}
                 onClick={() => setUsingGps(true)}
-                className="rounded-full bg-neutral-900 px-3 py-1 text-xs font-semibold text-white disabled:opacity-40"
+                className="inline-flex min-h-11 items-center rounded-full bg-neutral-900 px-4 text-sm font-semibold text-white disabled:opacity-40"
               >
                 Use my position
               </button>
@@ -201,11 +227,11 @@ export function DestinationSearch({
                 type="button"
                 onClick={() => {
                   setBanner(null)
-                  setMapReturned(false)
+                  setListOpen(false)
                   setNavigation(null)
                   setNavigating(true)
                 }}
-                className="rounded-full bg-blue-700 px-3 py-1 text-xs font-semibold text-white"
+                className="inline-flex min-h-11 items-center rounded-full bg-blue-800 px-4 text-sm font-semibold text-white"
               >
                 Start navigation
               </button>
@@ -218,42 +244,50 @@ export function DestinationSearch({
                     setBanner('Navigation cancelled.')
                     clearRoute(live != null)
                   }}
-                  className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium"
+                  className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-neutral-950 ring-1 ring-neutral-400"
                 >
                   Cancel navigation
                 </button>
-                {mapReturned ? (
-                  <button type="button" onClick={() => setMapReturned(false)} className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
-                    Destinations
-                  </button>
-                ) : (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = returnToMap({ selectedId, navigating, listOpen })
+                    setListOpen(next.listOpen)
+                    onRoute({ geometry: line, fit: line != null, focusPosition: line == null && live != null })
+                  }}
+                  className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-neutral-950 ring-1 ring-neutral-400"
+                >
+                  Return to the map
+                </button>
+                {listOpen ? null : (
                   <button
                     type="button"
-                    onClick={() => {
-                      setMapReturned(true)
-                      onRoute({ geometry: line, fit: line != null, focusPosition: line == null && live != null })
-                    }}
-                    className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium"
+                    onClick={() => setListOpen(true)}
+                    className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-neutral-950 ring-1 ring-neutral-400"
                   >
-                    Return to the map
+                    Destinations
                   </button>
                 )}
                 <button
                   type="button"
                   onClick={() => onRoute({ geometry: line, fit: false, focusPosition: true })}
-                  className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium"
+                  className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-neutral-950 ring-1 ring-neutral-400"
                 >
                   Current position
                 </button>
               </>
             ) : null}
             {usingGps && !navigating ? (
-              <button type="button" onClick={() => setUsingGps(false)} className="rounded-full bg-neutral-100 px-3 py-1 text-xs font-medium">
+              <button
+                type="button"
+                onClick={() => setUsingGps(false)}
+                className="inline-flex min-h-11 items-center rounded-full bg-white px-4 text-sm font-semibold text-neutral-950 ring-1 ring-neutral-400"
+              >
                 Clear starting point
               </button>
             ) : null}
           </div>
-          <p className="text-[11px] leading-4 text-neutral-500">
+          <p className="text-xs leading-5 text-neutral-800">
             {live ? `GPS ${live[1].toFixed(5)}, ${live[0].toFixed(5)}.` : 'Current GPS position is not available.'}
             {position && Number.isFinite(position.accuracy) ? ` Accuracy ${Math.round(position.accuracy)} m.` : ''}
             {start && !navigating ? ` Starting point ${start[1].toFixed(5)}, ${start[0].toFixed(5)}.` : ''}

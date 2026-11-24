@@ -11,6 +11,7 @@ import type {
   LocationPhase,
   LocationWait,
 } from '@/types/geolocation'
+import { gpsWatchDecision } from '@/visitor/experience'
 
 const FOUND_STATUS_MS = 1500
 
@@ -20,6 +21,7 @@ interface WatchSession {
   onPermissionChange: (() => void) | null
   foundTimer: number | null
   seenFix: boolean
+  pending: boolean
 }
 
 export interface UseGeolocationResult {
@@ -28,6 +30,8 @@ export interface UseGeolocationResult {
   message: string
   isTracking: boolean
   fixCount: number
+  wait: LocationWait
+  errorKind: GeolocationErrorInfo['kind'] | null
   requestLocation: () => void
   stopTracking: () => void
 }
@@ -81,6 +85,7 @@ export function useGeolocation(): UseGeolocationResult {
   const [isTracking, setIsTracking] = useState(false)
   const [fixCount, setFixCount] = useState(0)
   const sessionRef = useRef<WatchSession | null>(null)
+  const interruptedRef = useRef(false)
 
   const finishSession = () => {
     const session = sessionRef.current
@@ -88,8 +93,86 @@ export function useGeolocation(): UseGeolocationResult {
     if (session) cleanupSession(session)
   }
 
+  const attachWatch = (session: WatchSession) => {
+    if (session.watchId != null) {
+      stopLocationWatch(session.watchId)
+      session.watchId = null
+    }
+    const handlePosition = (next: GeoPosition) => {
+      if (sessionRef.current !== session) return
+      interruptedRef.current = false
+      setPosition(next)
+      setLastError(null)
+      setFixCount((count) => count + 1)
+      setPhase('available')
+      if (!session.seenFix) {
+        session.seenFix = true
+        setShowFoundNotice(true)
+        session.foundTimer = window.setTimeout(() => {
+          if (sessionRef.current !== session) return
+          setShowFoundNotice(false)
+        }, FOUND_STATUS_MS)
+        return
+      }
+      if (session.foundTimer != null) {
+        window.clearTimeout(session.foundTimer)
+        session.foundTimer = null
+      }
+      setShowFoundNotice(false)
+    }
+    const handleError = (error: GeolocationErrorInfo) => {
+      if (sessionRef.current !== session) return
+      setLastError(error)
+      if (error.kind === 'denied') {
+        interruptedRef.current = false
+        finishSession()
+        setIsTracking(false)
+        setShowFoundNotice(false)
+        setPhase('denied')
+        return
+      }
+      interruptedRef.current = true
+      setShowFoundNotice(false)
+      setPhase('temporary-error')
+    }
+    session.pending = true
+    let watchId: number
+    try {
+      watchId = startLocationWatch(handlePosition, handleError)
+    } catch (error) {
+      session.pending = false
+      if (sessionRef.current === session) {
+        finishSession()
+        setIsTracking(false)
+        setPhase('unsupported')
+      }
+      if (import.meta.env.DEV) console.warn('[geolocation] failed to start watch', error)
+      return
+    }
+    if (sessionRef.current !== session) {
+      stopLocationWatch(watchId)
+      return
+    }
+    session.pending = false
+    session.watchId = watchId
+  }
+
   useEffect(() => {
+    const onVisibility = () => {
+      const session = sessionRef.current
+      const decision = gpsWatchDecision({
+        event: 'visibility',
+        visible: document.visibilityState === 'visible',
+        hasSession: session != null,
+        watchActive: session?.watchId != null,
+        interrupted: interruptedRef.current,
+        pending: session?.pending === true,
+      })
+      if (decision === 'resume' && session) attachWatch(session)
+    }
+    document.addEventListener('visibilitychange', onVisibility)
     return () => {
+      document.removeEventListener('visibilitychange', onVisibility)
       const session = sessionRef.current
       sessionRef.current = null
       if (session) cleanupSession(session)
@@ -97,7 +180,15 @@ export function useGeolocation(): UseGeolocationResult {
   }, [])
 
   const requestLocation = () => {
-    if (sessionRef.current) return
+    const decision = gpsWatchDecision({
+      event: 'request',
+      visible: typeof document === 'undefined' ? true : document.visibilityState === 'visible',
+      hasSession: sessionRef.current != null,
+      watchActive: sessionRef.current?.watchId != null,
+      interrupted: interruptedRef.current,
+      pending: sessionRef.current?.pending === true,
+    })
+    if (decision === 'ignore-duplicate') return
 
     if (!isGeolocationSupported()) {
       setIsTracking(false)
@@ -111,6 +202,7 @@ export function useGeolocation(): UseGeolocationResult {
       onPermissionChange: null,
       foundTimer: null,
       seenFix: false,
+      pending: true,
     }
     sessionRef.current = session
     setIsTracking(true)
@@ -123,6 +215,7 @@ export function useGeolocation(): UseGeolocationResult {
   }
 
   const stopTracking = () => {
+    interruptedRef.current = false
     finishSession()
     setIsTracking(false)
     setShowFoundNotice(false)
@@ -188,70 +281,7 @@ export function useGeolocation(): UseGeolocationResult {
       return
     }
 
-    const handlePosition = (next: GeoPosition) => {
-      if (sessionRef.current !== session) return
-
-      setPosition(next)
-      setLastError(null)
-      setFixCount((count) => count + 1)
-      setPhase('available')
-
-      if (!session.seenFix) {
-        session.seenFix = true
-        setShowFoundNotice(true)
-        session.foundTimer = window.setTimeout(() => {
-          if (sessionRef.current !== session) return
-          setShowFoundNotice(false)
-        }, FOUND_STATUS_MS)
-        return
-      }
-
-      if (session.foundTimer != null) {
-        window.clearTimeout(session.foundTimer)
-        session.foundTimer = null
-      }
-
-      setShowFoundNotice(false)
-    }
-
-    const handleError = (error: GeolocationErrorInfo) => {
-      if (sessionRef.current !== session) return
-
-      setLastError(error)
-
-      if (error.kind === 'denied') {
-        finishSession()
-        setIsTracking(false)
-        setShowFoundNotice(false)
-        setPhase('denied')
-        return
-      }
-
-      setShowFoundNotice(false)
-      setPhase('temporary-error')
-    }
-
-    let watchId: number
-    try {
-      watchId = startLocationWatch(handlePosition, handleError)
-    } catch (error) {
-      if (sessionRef.current === session) {
-        finishSession()
-        setIsTracking(false)
-        setPhase('unsupported')
-      }
-      if (import.meta.env.DEV) {
-        console.warn('[geolocation] failed to start watch', error)
-      }
-      return
-    }
-
-    if (sessionRef.current !== session) {
-      stopLocationWatch(watchId)
-      return
-    }
-
-    session.watchId = watchId
+    attachWatch(session)
   }
 
   const message =
@@ -265,6 +295,8 @@ export function useGeolocation(): UseGeolocationResult {
     message,
     isTracking,
     fixCount,
+    wait,
+    errorKind: lastError?.kind ?? null,
     requestLocation,
     stopTracking,
   }

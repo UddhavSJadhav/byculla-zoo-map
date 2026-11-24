@@ -13,7 +13,7 @@ export function PathLegend({ visitor }: { visitor: boolean }) {
   const counts = pathStatusCounts()
   const rows = visitor ? pathAccessStatuses.filter((status) => status.id === 'accessible') : pathAccessStatuses
   return (
-    <aside className="pointer-events-none absolute bottom-[max(1rem,env(safe-area-inset-bottom))] left-3 z-10 w-[min(18rem,calc(100%-1.5rem))] rounded-2xl bg-white/95 p-3 shadow-md ring-1 ring-black/5">
+    <aside className={`pointer-events-none absolute left-3 z-10 rounded-2xl bg-white p-3 text-neutral-950 shadow-md ring-1 ring-black/10 ${visitor ? 'visitor-raise max-w-[calc(100%-7rem)]' : 'bottom-[max(1rem,env(safe-area-inset-bottom))] w-[min(18rem,calc(100%-1.5rem))]'}`}>
       <p className="text-[11px] font-medium tracking-wide text-neutral-500 uppercase">Walking paths</p>
       <ul className="mt-2 space-y-1.5">
         {rows.map((status) => (

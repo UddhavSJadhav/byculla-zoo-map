@@ -67,7 +67,7 @@ export function RouteLayer({ map, geometry, fitToken }: { map: Map | null; geome
         [west, south],
         [east, north],
       ],
-      { padding: { top: 220, bottom: 140, left: 48, right: 48 }, maxZoom: 18, duration: 700 },
+      { padding: { top: 96, bottom: 240, left: 48, right: 48 }, maxZoom: 18, duration: 700 },
     )
   }, [map, geometry, fitToken])
 
