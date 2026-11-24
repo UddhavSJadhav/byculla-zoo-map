@@ -2,8 +2,9 @@ import type { Position } from 'geojson'
 import type { AttractionGeometry, AttractionStatus } from '../attractions/types.ts'
 import { entranceReadiness } from '../entrances/connection.ts'
 import type { EntranceRecord } from '../entrances/types.ts'
-import type { WalkingGraph } from '../routing/graph.ts'
+import type { RouteSegment, WalkingGraph } from '../routing/graph.ts'
 import { shortestWalk } from '../routing/route.ts'
+import { planVisitorWalk } from '../routing/walk.ts'
 
 export type DestinationReadiness =
   | { state: 'unavailable'; reason: 'closed' | 'no-geometry' }
@@ -11,7 +12,7 @@ export type DestinationReadiness =
   | { state: 'entrance-not-verified' }
   | { state: 'entrance-not-connected'; reason: 'no-accessible-paths' | 'off-network' }
   | { state: 'start-not-chosen' }
-  | { state: 'no-route'; reason: 'start-not-on-network' | 'no-route' }
+  | { state: 'no-route'; reason: 'start-not-on-network' | 'no-route' | 'gps-not-connected' }
   | { state: 'ready'; distanceMeters: number; pathIds: string[] }
 
 export function destinationReadiness(input: {
@@ -20,6 +21,8 @@ export function destinationReadiness(input: {
   entrance: Pick<EntranceRecord, 'coordinates' | 'verified'> | null
   start: Position | null
   graph: WalkingGraph
+  network?: readonly RouteSegment[]
+  snapMaxMeters?: number
 }): DestinationReadiness {
   if (input.status === 'closed') return { state: 'unavailable', reason: 'closed' }
   if (!input.geometry) return { state: 'unavailable', reason: 'no-geometry' }
@@ -30,6 +33,18 @@ export function destinationReadiness(input: {
     return { state: 'entrance-not-connected', reason: entrance.state === 'not-connected' ? entrance.reason : 'off-network' }
   }
   if (!input.start) return { state: 'start-not-chosen' }
+  if (input.network) {
+    const planned = planVisitorWalk({
+      gps: input.start,
+      entrance: input.entrance.coordinates,
+      segments: input.network,
+      maxMeters: input.snapMaxMeters,
+    })
+    if (planned.ok) return { state: 'ready', distanceMeters: planned.distanceMeters, pathIds: planned.pathIds }
+    if (planned.reason === 'no-route') return { state: 'no-route', reason: 'no-route' }
+    if (planned.reason === 'entrance-not-on-network') return { state: 'entrance-not-connected', reason: 'off-network' }
+    return { state: 'no-route', reason: 'gps-not-connected' }
+  }
   const route = shortestWalk(input.graph, input.start, input.entrance.coordinates)
   if (!route.ok) {
     if (route.reason === 'end-not-on-network') return { state: 'entrance-not-connected', reason: 'off-network' }
@@ -44,6 +59,7 @@ export function destinationStatusLabel(readiness: DestinationReadiness): string 
   if (readiness.state === 'entrance-not-verified') return 'Entrance not verified'
   if (readiness.state === 'entrance-not-connected') return 'Entrance not connected to an accessible path'
   if (readiness.state === 'start-not-chosen') return 'Starting point needed'
+  if (readiness.state === 'no-route' && readiness.reason === 'gps-not-connected') return 'GPS is not connected to the visitor network'
   if (readiness.state === 'no-route') return 'No continuous route available'
   return 'Ready for navigation'
 }
@@ -58,6 +74,9 @@ export function destinationStatusDetail(readiness: DestinationReadiness): string
   }
   if (readiness.state === 'entrance-not-connected') return 'This entrance does not meet a visitor-accessible walking path.'
   if (readiness.state === 'start-not-chosen') return 'The entrance is on a visitor-accessible path. Choose your current GPS position before a route can be checked.'
+  if (readiness.state === 'no-route' && readiness.reason === 'gps-not-connected') {
+    return 'Your GPS position could not be joined to a visitor-accessible path without crossing a restricted or unverified path.'
+  }
   if (readiness.state === 'no-route' && readiness.reason === 'start-not-on-network') {
     return 'Your position is not on a visitor-accessible path, so no route is available.'
   }

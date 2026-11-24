@@ -1,10 +1,12 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import type { LineString } from 'geojson'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { AttractionAdmin } from '@/components/map-v2/attractions/AttractionAdmin'
 import { AttractionDetails } from '@/components/map-v2/attractions/AttractionDetails'
 import { AttractionFilters } from '@/components/map-v2/attractions/AttractionFilters'
 import { AttractionLayer } from '@/components/map-v2/attractions/AttractionLayer'
-import { DestinationSearch } from '@/components/map-v2/destinations/DestinationSearch'
+import { DestinationSearch, type RouteUpdate } from '@/components/map-v2/destinations/DestinationSearch'
+import { RouteLayer } from '@/components/map-v2/routes/RouteLayer'
 import { EntranceLayer } from '@/components/map-v2/entrances/EntranceLayer'
 import { PathAccessLayer } from '@/components/map-v2/paths/PathAccessLayer'
 import { PathAdmin } from '@/components/map-v2/paths/PathAdmin'
@@ -16,6 +18,7 @@ import { extractedDatasets, mappedNotLayered, missingGeography } from '@/data/ma
 import { layerSwatches } from '@/map-v2/layers'
 import { useAttractionBaseline } from '@/components/map-v2/attractions/useAttractions'
 import { useGeolocation } from '@/hooks/useGeolocation'
+import { isLowAccuracy } from '@/services/geolocation'
 import { attractionCategories, type AttractionCategory } from '@/attractions/types'
 import { mapLayerIds, type MapLayerId } from '@/types/map-v2'
 
@@ -34,6 +37,13 @@ export function MapV2Page() {
   const [showClosed, setShowClosed] = useState(false)
   const visitorMode = !editing && !managingAttractions && !managingPaths
   const [focusRequestId, setFocusRequestId] = useState(0)
+  const [routeGeometry, setRouteGeometry] = useState<LineString | null>(null)
+  const [routeFitToken, setRouteFitToken] = useState(0)
+  const handleRoute = useCallback((update: RouteUpdate) => {
+    setRouteGeometry(update.geometry)
+    if (update.fit) setRouteFitToken((current) => current + 1)
+    if (update.focusPosition) setFocusRequestId((current) => current + 1)
+  }, [])
   const [awaitingFix, setAwaitingFix] = useState(false)
   const fixCountAtStart = useRef(0)
   const centeredFixCount = useRef(0)
@@ -110,6 +120,7 @@ export function MapV2Page() {
               categories={categories}
               showClosed={showClosed}
               position={phase === 'available' ? position : null}
+              onRoute={handleRoute}
             />
           ) : (
             <input
@@ -133,6 +144,7 @@ export function MapV2Page() {
         </div>
       </header>
       <AttractionLayer map={map} visitor={visitorMode} categories={categories} showClosed={showClosed} />
+      {visitorMode ? <RouteLayer map={map} geometry={routeGeometry} fitToken={routeFitToken} /> : null}
       <AttractionDetails map={map} enabled={!editing} visitor={visitorMode} />
       {import.meta.env.DEV ? <EntranceLayer map={map} active={managingAttractions} placingEnabled={!editing} /> : null}
       <PathAccessLayer
@@ -164,8 +176,14 @@ export function MapV2Page() {
         >
           Locate me
         </button>
-        <p className="pointer-events-none max-w-full rounded-full bg-white/95 px-3 py-1 text-xs text-neutral-700 shadow-md ring-1 ring-black/5" role="status">
+        <p
+          className={`pointer-events-none max-w-full rounded-full bg-white/95 px-3 py-1 text-xs shadow-md ring-1 ring-black/5 ${phase === 'available' && position && isLowAccuracy(position.accuracy) ? 'text-amber-800' : 'text-neutral-700'}`}
+          role="status"
+        >
           {message}
+          {phase === 'available' && position && Number.isFinite(position.accuracy)
+            ? ` · Accuracy ${Math.round(position.accuracy)} m${isLowAccuracy(position.accuracy) ? ' · Location accuracy is poor.' : ''}`
+            : ''}
         </p>
         {baseline.status === 'error' ? (
           <p className="pointer-events-none max-w-full rounded-full bg-white/95 px-3 py-1 text-xs text-red-700 shadow-md ring-1 ring-black/5" role="alert">
