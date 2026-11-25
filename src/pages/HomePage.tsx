@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import "leaflet/dist/leaflet.css";
 import { AppShell } from "@/components/AppShell";
 import { IllustratedMap } from "@/components/IllustratedMap";
 import { LocationPanel } from "@/components/LocationPanel";

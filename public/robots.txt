@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+Allow: /visitor-guide/
+Allow: /attractions/
+Allow: /how-to-use-the-map/
+Allow: /og-preview.jpg
+Allow: /data/
+Allow: /google2b7d2f73196f7529.html
+
+Sitemap: https://byculla-zoo-map.vercel.app/sitemap.xml

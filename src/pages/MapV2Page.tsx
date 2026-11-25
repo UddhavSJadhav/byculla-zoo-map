@@ -1,31 +1,26 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import type { LineString } from 'geojson'
 import 'maplibre-gl/dist/maplibre-gl.css'
-import { AttractionAdmin } from '@/components/map-v2/attractions/AttractionAdmin'
 import { AttractionDetails } from '@/components/map-v2/attractions/AttractionDetails'
 import { AttractionLayer } from '@/components/map-v2/attractions/AttractionLayer'
 import { useVisitorWalk, type RouteUpdate } from '@/components/map-v2/destinations/useVisitorWalk'
 import { RouteLayer } from '@/components/map-v2/routes/RouteLayer'
-import { EntranceLayer } from '@/components/map-v2/entrances/EntranceLayer'
 import { PathAccessLayer } from '@/components/map-v2/paths/PathAccessLayer'
-import { PathAdmin } from '@/components/map-v2/paths/PathAdmin'
 import { PathLegend } from '@/components/map-v2/paths/PathLegend'
-import { MapEditor } from '@/components/map-v2/editor/MapEditor'
 import { ZooMap } from '@/components/map-v2/ZooMap'
 import type { Map } from 'maplibre-gl'
-import { extractedDatasets, mappedNotLayered, missingGeography } from '@/data/map-v2/availability'
 import { mapSources } from '@/data/map-v2/sources'
 import zooBoundary from '@/data/map-v2/zoo-boundary.geojson'
 import { polygonRing } from '@/map-v2/zooBounds'
-import { layerSwatches } from '@/map-v2/layers'
 import { useAttractionBaseline } from '@/components/map-v2/attractions/useAttractions'
 import { baselineServedFromCache, retryAttractionBaseline } from '@/attractions/baseline'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { visitorWalkingGraph } from '@/routing/visitorGraph'
-import { isLowAccuracy } from '@/services/geolocation'
 import { describeOffline, nextLocationNotice, showLocationBubble, visitorLocationExplanation } from '@/visitor/experience'
 import { attractionCategories } from '@/attractions/types'
 import { mapLayerIds, type MapLayerId } from '@/types/map-v2'
+
+const AdminTools = lazy(() => import('@/components/map-v2/admin/AdminTools').then((module) => ({ default: module.AdminTools })))
 
 const initialLayers = Object.fromEntries(mapLayerIds.map((id) => [id, id !== 'trees'])) as Record<MapLayerId, boolean>
 const zooRing = polygonRing(zooBoundary)
@@ -238,7 +233,6 @@ export function MapV2Page({ mode }: { mode: 'visitor' | 'admin' }) {
       <AttractionLayer map={map} visitor={visitorMode} categories={visitorCategories} showClosed={false} />
       {visitorMode ? <RouteLayer map={map} geometry={routeGeometry} fitToken={routeFitToken} clipRing={zooRing} /> : null}
       <AttractionDetails map={map} enabled={!editing} visitor={visitorMode} onTravel={visitorMode ? travelTo : undefined} travelNote={visitorMode ? walk.note : null} />
-      {import.meta.env.DEV ? <EntranceLayer map={map} active={managingAttractions} placingEnabled={!editing} /> : null}
       <PathAccessLayer
         map={map}
         visitor={visitorMode}
@@ -248,111 +242,31 @@ export function MapV2Page({ mode }: { mode: 'visitor' | 'admin' }) {
         interactive={managingPaths && !editing}
         onSelect={setSelectedPathId}
       />
-      {import.meta.env.DEV && managingPaths ? <PathAdmin map={map} selectedId={selectedPathId} editing={editing} onSelect={setSelectedPathId} /> : null}
       {editing ? null : <PathLegend visitor={visitorMode} />}
-      {import.meta.env.DEV && managingAttractions ? (
-        <AttractionAdmin
-          docked={editing}
-          onEditMap={() => {
-            setEditing(true)
-            setManagingAttractions(true)
-          }}
-        />
+      {import.meta.env.DEV && !visitorMode ? (
+        <Suspense fallback={null}>
+          <AdminTools
+            map={map}
+            managingAttractions={managingAttractions}
+            managingPaths={managingPaths}
+            editing={editing}
+            selectedPathId={selectedPathId}
+            onSelectPath={setSelectedPathId}
+            onEditMap={() => {
+              setEditing(true)
+              setManagingAttractions(true)
+            }}
+            layers={layers}
+            onToggleLayer={(id) => setLayers((current) => ({ ...current, [id]: !current[id] }))}
+            locate={locate}
+            locating={locating}
+            message={message}
+            phase={phase}
+            position={position}
+            baselineError={baseline.status === 'error' ? baseline.error : null}
+          />
+        </Suspense>
       ) : null}
-      {import.meta.env.DEV ? <MapEditor map={map} editing={editing} /> : null}
-      {visitorMode ? null : <div className="pointer-events-none absolute right-3 bottom-[max(1rem,env(safe-area-inset-bottom))] z-10 flex w-[min(22rem,calc(100%-1.5rem))] flex-col items-end gap-2">
-        <button
-          type="button"
-          onClick={locate}
-          disabled={locating}
-          aria-busy={locating}
-          className="pointer-events-auto inline-flex min-h-11 items-center gap-2 rounded-full bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-md disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          {locating ? (
-            <svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" className="animate-spin">
-              <circle cx="12" cy="12" r="9" opacity="0.25" />
-              <path d="M21 12a9 9 0 0 0-9-9" strokeLinecap="round" />
-            </svg>
-          ) : null}
-          {locating ? 'Finding position' : 'Locate me'}
-        </button>
-        <p
-          className={`pointer-events-none max-w-full rounded-full bg-white/95 px-3 py-1 text-xs shadow-md ring-1 ring-black/5 ${phase === 'available' && position && isLowAccuracy(position.accuracy) ? 'text-amber-800' : 'text-neutral-700'}`}
-          role="status"
-        >
-          {message}
-          {phase === 'available' && position && Number.isFinite(position.accuracy)
-            ? ` · Accuracy ${Math.round(position.accuracy)} m${isLowAccuracy(position.accuracy) ? ' · Location accuracy is poor.' : ''}`
-            : ''}
-        </p>
-        {baseline.status === 'error' ? (
-          <p className="pointer-events-none max-w-full rounded-full bg-white/95 px-3 py-1 text-xs text-red-700 shadow-md ring-1 ring-black/5" role="alert">
-            {baseline.error}
-          </p>
-        ) : null}
-        <details className="pointer-events-auto max-h-[42vh] w-full overflow-y-auto rounded-3xl bg-white/95 p-4 shadow-lg ring-1 ring-black/5">
-          <summary className="cursor-pointer text-sm font-semibold">Legend and data</summary>
-          <div className="mt-3 space-y-3">
-            <fieldset className="space-y-2">
-              <legend className="text-xs font-medium tracking-wide text-neutral-500 uppercase">Layers</legend>
-              {extractedDatasets.map((dataset) => (
-                <label key={dataset.id} className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={layers[dataset.id]}
-                    onChange={() =>
-                      setLayers((current) => ({ ...current, [dataset.id]: !current[dataset.id] }))
-                    }
-                  />
-                  <span
-                    className="inline-block size-3 rounded-full ring-1 ring-black/15"
-                    style={{ background: layerSwatches[dataset.id] }}
-                  />
-                  <span className="flex-1">{dataset.title}</span>
-                  <span className="tabular-nums text-neutral-500">{dataset.count}</span>
-                </label>
-              ))}
-            </fieldset>
-            <p className="text-xs leading-5 text-neutral-600">
-              Shapes and names come from OpenStreetMap. Nothing missing from that data is drawn in. Map tiles
-              © OpenFreeMap and OpenStreetMap contributors.
-            </p>
-            <div>
-              <h2 className="text-xs font-medium tracking-wide text-neutral-500 uppercase">On this map</h2>
-              <ul className="mt-1 space-y-1 text-xs text-neutral-700">
-                {extractedDatasets.map((dataset) => (
-                  <li key={dataset.id}>
-                    {dataset.title}: {dataset.count} {dataset.geometryTypes.join(', ')}. {dataset.tags.join('; ')}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h2 className="text-xs font-medium tracking-wide text-neutral-500 uppercase">Mapped, not drawn as its own layer</h2>
-              <ul className="mt-1 space-y-1 text-xs text-neutral-700">
-                {mappedNotLayered.map((group) => (
-                  <li key={group.category}>
-                    {group.category}: {group.count} {group.geometry}. {group.tags.join(', ')}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h2 className="text-xs font-medium tracking-wide text-neutral-500 uppercase">Not in OpenStreetMap</h2>
-              <ul className="mt-1 list-disc space-y-1 pl-4 text-xs text-neutral-700">
-                {missingGeography.map((item) => (
-                  <li key={item}>{item}</li>
-                ))}
-              </ul>
-            </div>
-            {phase === 'available' && position ? (
-              <p className="text-xs tabular-nums text-neutral-600">
-                GPS {position.latitude.toFixed(5)}, {position.longitude.toFixed(5)} · accuracy {Math.round(position.accuracy)} m
-              </p>
-            ) : null}
-          </div>
-        </details>
-      </div>}
     </div>
   )
 }

@@ -1,7 +1,16 @@
-import { useEffect, useState } from 'react'
-import { CalibrationPage } from '@/pages/CalibrationPage'
-import { HomePage } from '@/pages/HomePage'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { MapV2Page } from '@/pages/MapV2Page'
+
+const HomePage = lazy(() => import('@/pages/HomePage').then((module) => ({ default: module.HomePage })))
+const CalibrationPage = lazy(() => import('@/pages/CalibrationPage').then((module) => ({ default: module.CalibrationPage })))
+
+function RouteFallback() {
+  return (
+    <div className="flex h-dvh items-center justify-center bg-[#f4ead7] text-sm font-medium text-neutral-700" role="status">
+      Loading…
+    </div>
+  )
+}
 
 export default function App() {
   const path = usePathname()
@@ -12,9 +21,21 @@ export default function App() {
   }, [redirect])
 
   if (redirect) return null
-  if (path === '/legacy-v1') return <HomePage />
+  if (path === '/legacy-v1') {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <HomePage />
+      </Suspense>
+    )
+  }
   if (import.meta.env.DEV && path === '/admin') return <MapV2Page key="admin" mode="admin" />
-  if (import.meta.env.DEV && path === '/calibrate') return <CalibrationPage />
+  if (import.meta.env.DEV && path === '/calibrate') {
+    return (
+      <Suspense fallback={<RouteFallback />}>
+        <CalibrationPage />
+      </Suspense>
+    )
+  }
   return <MapV2Page key="visitor" mode="visitor" />
 }
 

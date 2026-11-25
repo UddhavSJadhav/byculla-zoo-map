@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "leaflet/dist/leaflet.css";
 import { AppShell } from "@/components/AppShell";
 import {
   GeographicCalibrationMarkers,

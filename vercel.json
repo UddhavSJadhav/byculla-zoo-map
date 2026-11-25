@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    { "source": "/legacy-v1", "destination": "/index.html" },
+    { "source": "/map-v2", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/index.html" },
+    { "source": "/calibrate", "destination": "/index.html" }
+  ]
+}

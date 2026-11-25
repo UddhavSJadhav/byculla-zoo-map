@@ -1,13 +1,53 @@
 @import "tailwindcss";
 
 html,
-body,
-#root {
-  height: 100%;
+body {
+  min-height: 100%;
 }
 
 body {
   margin: 0;
+  background: #f4ead7;
+  color: #1f2937;
+}
+
+/* Map app fills the viewport; crawlable about copy stays in the HTML document. */
+#root {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  height: 100%;
+}
+
+.seo-about {
+  max-width: 42rem;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  line-height: 1.55;
+}
+
+.seo-about h1 {
+  margin: 0 0 0.75rem;
+  font-size: 1.75rem;
+  line-height: 1.2;
+}
+
+.seo-about h2 {
+  margin: 1.5rem 0 0.5rem;
+  font-size: 1.125rem;
+}
+
+.seo-about p {
+  margin: 0 0 0.85rem;
+}
+
+.seo-about a {
+  color: #1d4ed8;
+}
+
+.seo-about a:hover,
+.seo-about a:focus-visible {
+  text-decoration: underline;
 }
 
 .leaflet-container {
