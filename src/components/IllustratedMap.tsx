@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { ImageOverlay, MapContainer, useMap, useMapEvents } from 'react-leaflet'
 import { leafletToImagePixel } from '@/services/illustratedCoordinates'
 import type { PixelPoint } from '@/types/calibration'
-import illustratedMapUrl from '../../images/image.png'
+const illustratedMapUrl = `${import.meta.env.BASE_URL}legacy/illustrated-map.png`
 
 export interface IllustratedImageSize {
   width: number
