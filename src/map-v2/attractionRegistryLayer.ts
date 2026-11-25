@@ -26,6 +26,8 @@ const categoryColor = [
   categoryPresentation.habitat.color,
   'venue',
   categoryPresentation.venue.color,
+  'amenity',
+  categoryPresentation.amenity.color,
   '#8d6b4a',
 ] as const
 

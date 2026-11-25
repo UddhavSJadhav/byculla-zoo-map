@@ -27,6 +27,10 @@ const seeds: Seed[] = [
   { exhibitNumber: 17, name: 'Leopard', category: 'animal' },
   { exhibitNumber: 18, name: 'Bear', category: 'animal' },
   { exhibitNumber: 19, name: 'Lion', category: 'animal' },
+  { exhibitNumber: 20, name: 'Cafe Wild', category: 'amenity' },
+  { exhibitNumber: 21, name: 'Washroom', category: 'amenity' },
+  { exhibitNumber: 22, name: 'Toilets', category: 'amenity' },
+  { exhibitNumber: 23, name: 'Japanese Garden', category: 'garden' },
 ]
 
 export const attractionRegistry: AttractionRecord[] = seeds.map((seed) => ({

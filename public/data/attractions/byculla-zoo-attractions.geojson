@@ -553,6 +553,190 @@
         "lastEdited": "2026-11-20T11:25:56.558Z",
         "rejectedSourceIds": []
       }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-20",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.8383761,
+              18.9792143
+            ],
+            [
+              72.8385089,
+              18.9791901
+            ],
+            [
+              72.8384897,
+              18.9790958
+            ],
+            [
+              72.8383569,
+              18.97912
+            ],
+            [
+              72.8383761,
+              18.9792143
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-20",
+        "name": "Cafe Wild",
+        "exhibitNumber": 20,
+        "category": "amenity",
+        "description": "Place to eat.",
+        "source": "OpenStreetMap",
+        "verified": true,
+        "status": "open",
+        "geometrySource": "manual",
+        "sourceFeatureId": null,
+        "osmFeatureId": null,
+        "osmLayer": null,
+        "lastEdited": "2026-11-25T07:11:02.608Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-21",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8385104,
+          18.9790449
+        ]
+      },
+      "properties": {
+        "id": "exhibit-21",
+        "name": "Washroom",
+        "exhibitNumber": 21,
+        "category": "amenity",
+        "description": "Freshen up near Cafe Wild.",
+        "source": "Visitor map",
+        "verified": true,
+        "status": "open",
+        "geometrySource": "manual",
+        "sourceFeatureId": null,
+        "osmFeatureId": null,
+        "osmLayer": null,
+        "lastEdited": "2026-11-25T07:11:02.608Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-22",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8385562,
+          18.9792697
+        ]
+      },
+      "properties": {
+        "id": "exhibit-22",
+        "name": "Toilets",
+        "exhibitNumber": 22,
+        "category": "amenity",
+        "description": "Toilets near Cafe Wild.",
+        "source": "Visitor map",
+        "verified": true,
+        "status": "open",
+        "geometrySource": "manual",
+        "sourceFeatureId": null,
+        "osmFeatureId": null,
+        "osmLayer": null,
+        "lastEdited": "2026-11-25T07:11:02.608Z",
+        "rejectedSourceIds": []
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-23",
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.8368525,
+              18.9784434
+            ],
+            [
+              72.8367611,
+              18.9784479
+            ],
+            [
+              72.8367178,
+              18.9784411
+            ],
+            [
+              72.8366986,
+              18.9784115
+            ],
+            [
+              72.8367419,
+              18.9783592
+            ],
+            [
+              72.8368525,
+              18.9783228
+            ],
+            [
+              72.8369487,
+              18.978341
+            ],
+            [
+              72.8370305,
+              18.9783046
+            ],
+            [
+              72.8370834,
+              18.9782933
+            ],
+            [
+              72.8371002,
+              18.9783137
+            ],
+            [
+              72.8370834,
+              18.9783774
+            ],
+            [
+              72.8370089,
+              18.9784138
+            ],
+            [
+              72.8369391,
+              18.9784343
+            ],
+            [
+              72.8368525,
+              18.9784434
+            ]
+          ]
+        ]
+      },
+      "properties": {
+        "id": "exhibit-23",
+        "name": "Japanese Garden",
+        "exhibitNumber": 23,
+        "category": "garden",
+        "description": "Around the pond between Veermata Jijabhai Sculpture and Rose Garden.",
+        "source": "OpenStreetMap",
+        "verified": true,
+        "status": "open",
+        "geometrySource": "manual",
+        "sourceFeatureId": null,
+        "osmFeatureId": null,
+        "osmLayer": null,
+        "lastEdited": "2026-11-25T07:17:25.266Z",
+        "rejectedSourceIds": []
+      }
     }
   ]
 }

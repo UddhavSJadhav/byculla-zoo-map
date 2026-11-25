@@ -6,6 +6,7 @@ export const categoryPresentation: Record<AttractionCategory, { color: string; m
   garden: { color: '#5f8f4e', mark: 'G' },
   habitat: { color: '#8a6a3b', mark: 'H' },
   venue: { color: '#6b5b95', mark: 'V' },
+  amenity: { color: '#3f7d6e', mark: 'S' },
 }
 
 export function visitorAttractions(attractions: AttractionRecord[], categories: readonly AttractionCategory[], showClosed: boolean): AttractionRecord[] {

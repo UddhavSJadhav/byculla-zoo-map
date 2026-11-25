@@ -6,6 +6,7 @@ export const attractionCategories = [
   { id: 'garden', label: 'Garden' },
   { id: 'habitat', label: 'Habitat' },
   { id: 'venue', label: 'Venue' },
+  { id: 'amenity', label: 'Amenities' },
 ] as const
 
 export type AttractionCategory = (typeof attractionCategories)[number]['id']
