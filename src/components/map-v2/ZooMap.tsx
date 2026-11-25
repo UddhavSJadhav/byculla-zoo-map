@@ -1,12 +1,16 @@
 import { useEffect, useRef, useState } from 'react'
-import { type GeoJSONSource, Map, Marker, NavigationControl } from 'maplibre-gl'
+import { type GeoJSONSource, LngLatBounds, Map, Marker, NavigationControl } from 'maplibre-gl'
 import '@/map-v2/configureWorker'
 import { zoo } from '@/data/zoo'
+import zooBoundary from '@/data/map-v2/zoo-boundary.geojson'
 import { accuracyCircle, emptyFeatureCollection } from '@/map-v2/accuracyCircle'
 import { addZooLayers, layerGroupIds } from '@/map-v2/layers'
+import { pointInRing, polygonRing, ringBounds } from '@/map-v2/zooBounds'
 import { isLowAccuracy } from '@/services/geolocation'
 import type { GeoPosition } from '@/types/geolocation'
 import type { MapLayerId } from '@/types/map-v2'
+
+const zooRing = polygonRing(zooBoundary)
 
 const libertyStyle = 'https://tiles.openfreemap.org/styles/liberty'
 
@@ -14,10 +18,11 @@ interface ZooMapProps {
   position: GeoPosition | null
   focusRequestId: number
   layers: Record<MapLayerId, boolean>
+  confineToZoo?: boolean
   onMapReady?: (map: Map | null) => void
 }
 
-export function ZooMap({ position, focusRequestId, layers, onMapReady }: ZooMapProps) {
+export function ZooMap({ position, focusRequestId, layers, confineToZoo = false, onMapReady }: ZooMapProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<Map | null>(null)
   const markerRef = useRef<Marker | null>(null)
@@ -108,16 +113,30 @@ export function ZooMap({ position, focusRequestId, layers, onMapReady }: ZooMapP
 
   useEffect(() => {
     const map = mapRef.current
+    if (!ready || !map || !confineToZoo) return
+    const box = ringBounds(zooRing)
+    if (!box) return
+    const bounds = new LngLatBounds([box.west, box.south], [box.east, box.north])
+    map.setMaxBounds(bounds)
+    const camera = map.cameraForBounds(bounds, { padding: 24 })
+    if (camera?.zoom == null) return
+    map.setMinZoom(camera.zoom)
+    if (map.getZoom() < camera.zoom) map.jumpTo({ zoom: camera.zoom })
+  }, [confineToZoo, ready])
+
+  useEffect(() => {
+    const map = mapRef.current
     if (!ready || !map || !position || focusRequestId === 0 || appliedFocusRef.current === focusRequestId) {
       return
     }
     appliedFocusRef.current = focusRequestId
+    if (confineToZoo && !pointInRing([position.longitude, position.latitude], zooRing)) return
     map.flyTo({
       center: [position.longitude, position.latitude],
       zoom: Math.max(map.getZoom(), 17),
       essential: true,
     })
-  }, [focusRequestId, position, ready])
+  }, [confineToZoo, focusRequestId, position, ready])
 
   return <div ref={containerRef} className="h-full w-full" />
 }

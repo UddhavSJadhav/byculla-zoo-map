@@ -358,7 +358,33 @@
     {
       "type": "Feature",
       "id": "exhibit-13",
-      "geometry": null,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              72.83920076510395,
+              18.979175251346078
+            ],
+            [
+              72.83919459564535,
+              18.9790488465095
+            ],
+            [
+              72.83929536346577,
+              18.979046901818904
+            ],
+            [
+              72.83930564589679,
+              18.979177196035195
+            ],
+            [
+              72.83920076510395,
+              18.979175251346078
+            ]
+          ]
+        ]
+      },
       "properties": {
         "id": "exhibit-13",
         "name": "Macaque",
@@ -366,13 +392,13 @@
         "category": "animal",
         "description": "",
         "source": "Visitor map",
-        "verified": false,
+        "verified": true,
         "status": "open",
-        "geometrySource": null,
+        "geometrySource": "manual",
         "sourceFeatureId": null,
         "osmFeatureId": null,
         "osmLayer": null,
-        "lastEdited": null,
+        "lastEdited": "2026-11-25T05:00:57.300Z",
         "rejectedSourceIds": []
       }
     },

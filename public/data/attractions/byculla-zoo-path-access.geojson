@@ -507,6 +507,18 @@
     },
     {
       "type": "Feature",
+      "id": "way-1112637274",
+      "geometry": null,
+      "properties": {
+        "osmFeatureId": "way-1112637274",
+        "sourceId": "way/1112637274",
+        "status": "accessible",
+        "note": "",
+        "lastEdited": "2026-11-25T05:03:30.367Z"
+      }
+    },
+    {
+      "type": "Feature",
       "id": "way-1112638055",
       "geometry": null,
       "properties": {

@@ -4,7 +4,6 @@ import type { LocationPhase } from '../types/geolocation.ts'
 export { poorAccuracyMeters }
 
 export const visitorTouchTargetPx = 44
-export const visitorSheetMaxVh = 46
 
 export interface VisitState {
   selectedId: string | null
@@ -12,7 +11,7 @@ export interface VisitState {
   listOpen: boolean
 }
 
-export function visitorChrome(input: { admin: boolean; width: number; navigating: boolean; listOpen: boolean }) {
+export function visitorChrome(input: { admin: boolean; navigating: boolean }) {
   if (input.admin) {
     return {
       mode: 'admin' as const,
@@ -23,17 +22,11 @@ export function visitorChrome(input: { admin: boolean; width: number; navigating
       minTouchTargetPx: visitorTouchTargetPx,
     }
   }
-  const height = input.navigating && !input.listOpen ? ('compact' as const) : input.listOpen ? ('expanded' as const) : ('peek' as const)
   return {
     mode: 'visitor' as const,
     mapFillsScreen: true,
-    sheet: {
-      placement: 'bottom' as const,
-      width: input.width < 768 ? ('full' as const) : ('capped' as const),
-      height,
-      maxVh: visitorSheetMaxVh,
-    },
-    searchPlacement: 'sheet' as const,
+    sheet: null,
+    searchPlacement: 'none' as const,
     instructionProminent: input.navigating,
     minTouchTargetPx: visitorTouchTargetPx,
   }
@@ -137,6 +130,19 @@ export function visitorLocationExplanation(input: {
     detail: input.recovered ? `${accuracyText} Updates have resumed.` : accuracyText,
     poorAccuracy: false,
   }
+}
+
+export function showLocationBubble(input: {
+  phase: LocationPhase
+  wait: 'permission' | 'locating' | null
+  errorKind: 'denied' | 'timeout' | 'unavailable' | null
+  poorAccuracy: boolean
+}): boolean {
+  if (input.phase === 'unsupported') return true
+  if (input.phase === 'denied' || input.errorKind === 'denied') return true
+  if (input.phase === 'waiting' && input.wait !== 'locating') return true
+  if (input.phase === 'temporary-error') return true
+  return input.poorAccuracy
 }
 
 export function nextLocationNotice(

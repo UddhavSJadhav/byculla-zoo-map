@@ -1,10 +1,21 @@
 import { useEffect, useRef } from 'react'
-import type { FeatureCollection, LineString } from 'geojson'
+import type { FeatureCollection, LineString, Position } from 'geojson'
 import type { GeoJSONSource, Map } from 'maplibre-gl'
+import { pointInRing } from '@/map-v2/zooBounds'
 
 const empty: FeatureCollection = { type: 'FeatureCollection', features: [] }
 
-export function RouteLayer({ map, geometry, fitToken }: { map: Map | null; geometry: LineString | null; fitToken: number }) {
+export function RouteLayer({
+  map,
+  geometry,
+  fitToken,
+  clipRing,
+}: {
+  map: Map | null
+  geometry: LineString | null
+  fitToken: number
+  clipRing?: readonly Position[] | null
+}) {
   const fitted = useRef(0)
 
   useEffect(() => {
@@ -52,6 +63,7 @@ export function RouteLayer({ map, geometry, fitToken }: { map: Map | null; geome
     let east = -Infinity
     let north = -Infinity
     for (const position of geometry.coordinates) {
+      if (clipRing && !pointInRing(position, clipRing)) continue
       west = Math.min(west, Number(position[0]))
       south = Math.min(south, Number(position[1]))
       east = Math.max(east, Number(position[0]))
@@ -67,9 +79,9 @@ export function RouteLayer({ map, geometry, fitToken }: { map: Map | null; geome
         [west, south],
         [east, north],
       ],
-      { padding: { top: 96, bottom: 240, left: 48, right: 48 }, maxZoom: 18, duration: 700 },
+      { padding: { top: 80, bottom: 96, left: 48, right: 64 }, maxZoom: 18, duration: 700 },
     )
-  }, [map, geometry, fitToken])
+  }, [clipRing, map, geometry, fitToken])
 
   return null
 }

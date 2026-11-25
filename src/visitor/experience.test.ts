@@ -9,33 +9,30 @@ import {
   nextLocationNotice,
   preserveVisit,
   returnToMap,
+  showLocationBubble,
   visitorChrome,
   visitorLocationExplanation,
   visitorTouchTargetPx,
 } from './experience.ts'
 
-test('a narrow visitor screen uses a bottom sheet and keeps the map full', () => {
-  const phone = visitorChrome({ admin: false, width: 390, navigating: false, listOpen: false })
+test('a visitor screen keeps the map full without a bottom sheet', () => {
+  const phone = visitorChrome({ admin: false, navigating: false })
   assert.equal(phone.mapFillsScreen, true)
-  assert.equal(phone.searchPlacement, 'sheet')
-  assert.equal(phone.sheet?.placement, 'bottom')
-  assert.equal(phone.sheet?.width, 'full')
-  assert.equal(phone.sheet?.height, 'peek')
-  assert.ok(phone.sheet && phone.sheet.maxVh <= 50)
+  assert.equal(phone.sheet, null)
+  assert.equal(phone.searchPlacement, 'none')
+  assert.equal(phone.instructionProminent, false)
   assert.equal(phone.minTouchTargetPx, visitorTouchTargetPx)
   assert.ok(phone.minTouchTargetPx >= 44)
-  const expanded = visitorChrome({ admin: false, width: 390, navigating: false, listOpen: true })
-  assert.equal(expanded.sheet?.height, 'expanded')
-  const walking = visitorChrome({ admin: false, width: 390, navigating: true, listOpen: false })
-  assert.equal(walking.sheet?.height, 'compact')
+  const walking = visitorChrome({ admin: false, navigating: true })
+  assert.equal(walking.sheet, null)
   assert.equal(walking.instructionProminent, true)
-  const wide = visitorChrome({ admin: false, width: 1100, navigating: true, listOpen: false })
-  assert.equal(wide.sheet?.width, 'capped')
+  const wide = visitorChrome({ admin: false, navigating: true })
   assert.equal(wide.mapFillsScreen, true)
+  assert.equal(wide.sheet, null)
 })
 
 test('admin keeps the top search and does not use the visitor sheet', () => {
-  const admin = visitorChrome({ admin: true, width: 390, navigating: true, listOpen: true })
+  const admin = visitorChrome({ admin: true, navigating: true })
   assert.equal(admin.mode, 'admin')
   assert.equal(admin.sheet, null)
   assert.equal(admin.searchPlacement, 'top')
@@ -69,6 +66,18 @@ test('GPS states use visitor language and recover when updates resume', () => {
   const steady = nextLocationNotice(resumed, 'available')
   assert.equal(steady.recovered, true)
   assert.equal(nextLocationNotice({ phase: 'available', recovered: true }, 'temporary-error').recovered, false)
+})
+
+test('location problems float and a steady fix stays quiet', () => {
+  assert.equal(showLocationBubble({ phase: 'unsupported', wait: null, errorKind: null, poorAccuracy: false }), true)
+  assert.equal(showLocationBubble({ phase: 'waiting', wait: 'permission', errorKind: null, poorAccuracy: false }), true)
+  assert.equal(showLocationBubble({ phase: 'waiting', wait: 'locating', errorKind: null, poorAccuracy: false }), false)
+  assert.equal(showLocationBubble({ phase: 'denied', wait: null, errorKind: 'denied', poorAccuracy: false }), true)
+  assert.equal(showLocationBubble({ phase: 'temporary-error', wait: null, errorKind: 'timeout', poorAccuracy: false }), true)
+  assert.equal(showLocationBubble({ phase: 'temporary-error', wait: null, errorKind: 'unavailable', poorAccuracy: false }), true)
+  assert.equal(showLocationBubble({ phase: 'available', wait: null, errorKind: null, poorAccuracy: true }), true)
+  assert.equal(showLocationBubble({ phase: 'available', wait: null, errorKind: null, poorAccuracy: false }), false)
+  assert.equal(showLocationBubble({ phase: 'stopped', wait: null, errorKind: null, poorAccuracy: false }), false)
 })
 
 test('a GPS watch is not duplicated and resumes after backgrounding', () => {

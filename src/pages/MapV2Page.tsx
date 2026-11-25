@@ -3,9 +3,8 @@ import type { LineString } from 'geojson'
 import 'maplibre-gl/dist/maplibre-gl.css'
 import { AttractionAdmin } from '@/components/map-v2/attractions/AttractionAdmin'
 import { AttractionDetails } from '@/components/map-v2/attractions/AttractionDetails'
-import { AttractionFilters } from '@/components/map-v2/attractions/AttractionFilters'
 import { AttractionLayer } from '@/components/map-v2/attractions/AttractionLayer'
-import { DestinationSearch, type RouteUpdate } from '@/components/map-v2/destinations/DestinationSearch'
+import { useVisitorWalk, type RouteUpdate } from '@/components/map-v2/destinations/useVisitorWalk'
 import { RouteLayer } from '@/components/map-v2/routes/RouteLayer'
 import { EntranceLayer } from '@/components/map-v2/entrances/EntranceLayer'
 import { PathAccessLayer } from '@/components/map-v2/paths/PathAccessLayer'
@@ -16,25 +15,27 @@ import { ZooMap } from '@/components/map-v2/ZooMap'
 import type { Map } from 'maplibre-gl'
 import { extractedDatasets, mappedNotLayered, missingGeography } from '@/data/map-v2/availability'
 import { mapSources } from '@/data/map-v2/sources'
+import zooBoundary from '@/data/map-v2/zoo-boundary.geojson'
+import { polygonRing } from '@/map-v2/zooBounds'
 import { layerSwatches } from '@/map-v2/layers'
 import { useAttractionBaseline } from '@/components/map-v2/attractions/useAttractions'
 import { baselineServedFromCache, retryAttractionBaseline } from '@/attractions/baseline'
 import { useGeolocation } from '@/hooks/useGeolocation'
 import { visitorWalkingGraph } from '@/routing/visitorGraph'
 import { isLowAccuracy } from '@/services/geolocation'
-import { describeOffline, nextLocationNotice, visitorLocationExplanation } from '@/visitor/experience'
-import { attractionCategories, type AttractionCategory } from '@/attractions/types'
+import { describeOffline, nextLocationNotice, showLocationBubble, visitorLocationExplanation } from '@/visitor/experience'
+import { attractionCategories } from '@/attractions/types'
 import { mapLayerIds, type MapLayerId } from '@/types/map-v2'
 
 const initialLayers = Object.fromEntries(mapLayerIds.map((id) => [id, id !== 'trees'])) as Record<MapLayerId, boolean>
+const zooRing = polygonRing(zooBoundary)
+const visitorCategories = attractionCategories.map((category) => category.id)
 
 export function MapV2Page({ mode }: { mode: 'visitor' | 'admin' }) {
   const { phase, position, message, fixCount, requestLocation, wait, errorKind } = useGeolocation()
   const baseline = useAttractionBaseline()
   const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine))
   const [notice, setNotice] = useState({ phase, recovered: false })
-  const [guideActive, setGuideActive] = useState(false)
-  const [destinationsOpen, setDestinationsOpen] = useState(false)
   if (notice.phase !== phase) setNotice(nextLocationNotice(notice, phase))
   const locationExplanation = visitorLocationExplanation({
     phase,
@@ -55,8 +56,6 @@ export function MapV2Page({ mode }: { mode: 'visitor' | 'admin' }) {
   const [managingAttractions, setManagingAttractions] = useState(mode === 'admin')
   const [managingPaths, setManagingPaths] = useState(false)
   const [selectedPathId, setSelectedPathId] = useState<string | null>(null)
-  const [categories, setCategories] = useState<AttractionCategory[]>(attractionCategories.map((category) => category.id))
-  const [showClosed, setShowClosed] = useState(false)
   const visitorMode = mode === 'visitor'
   const [focusRequestId, setFocusRequestId] = useState(0)
   const [routeGeometry, setRouteGeometry] = useState<LineString | null>(null)
@@ -66,6 +65,7 @@ export function MapV2Page({ mode }: { mode: 'visitor' | 'admin' }) {
     if (update.fit) setRouteFitToken((current) => current + 1)
     if (update.focusPosition) setFocusRequestId((current) => current + 1)
   }, [])
+  const walk = useVisitorWalk(phase === 'available' ? position : null, handleRoute)
   const [awaitingFix, setAwaitingFix] = useState(false)
   const fixCountAtStart = useRef(0)
   const centeredFixCount = useRef(0)
@@ -78,7 +78,6 @@ export function MapV2Page({ mode }: { mode: 'visitor' | 'admin' }) {
     setFocusRequestId((current) => current + 1)
   }, [awaitingFix, fixCount, position])
 
-  const sheetRef = useRef<HTMLDivElement>(null)
   const headerRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -109,37 +108,32 @@ export function MapV2Page({ mode }: { mode: 'visitor' | 'admin' }) {
     }
   }, [visitorMode, offline.showIndicator])
 
-  useEffect(() => {
-    const node = sheetRef.current
-    const root = node?.closest('.map-v2')
-    if (!visitorMode || !(node instanceof HTMLElement) || !(root instanceof HTMLElement)) return
-    const apply = () => root.style.setProperty('--visitor-sheet-offset', `${node.offsetHeight + 12}px`)
-    apply()
-    const observer = new ResizeObserver(apply)
-    observer.observe(node)
-    return () => {
-      observer.disconnect()
-      root.style.removeProperty('--visitor-sheet-offset')
-    }
-  }, [visitorMode, guideActive])
-
   const locate = () => {
     fixCountAtStart.current = fixCount
     setAwaitingFix(true)
     requestLocation()
     if (position) setFocusRequestId((current) => current + 1)
   }
+  const travelTo = (attractionId: string) => {
+    if (walk.travel(attractionId) === 'need-location') locate()
+  }
+  const locationBubble = showLocationBubble({
+    phase,
+    wait: phase === 'waiting' ? wait : null,
+    errorKind,
+    poorAccuracy: locationExplanation.poorAccuracy,
+  })
 
   return (
     <div className={`map-v2 relative h-dvh w-full overflow-hidden bg-[#f4ead7] text-neutral-900${visitorMode ? ' map-v2-visitor' : ''}${editing ? ' map-v2-editing' : ''}`}>
-      <ZooMap position={position} focusRequestId={focusRequestId} layers={layers} onMapReady={setMap} />
+      <ZooMap position={position} focusRequestId={focusRequestId} layers={layers} confineToZoo={visitorMode} onMapReady={setMap} />
       {visitorMode ? (
-        offline.showIndicator ? (
+        offline.showIndicator || baseline.status === 'error' ? (
           <p
             className="pointer-events-auto absolute top-[max(0.75rem,env(safe-area-inset-top))] right-3 left-14 z-10 rounded-2xl bg-white px-3 py-2 text-sm font-medium text-neutral-950 shadow-md ring-1 ring-neutral-300"
-            role="status"
+            role={baseline.status === 'error' ? 'alert' : 'status'}
           >
-            {offline.text}
+            {baseline.status === 'error' ? baseline.error : offline.text}
           </p>
         ) : null
       ) : (
@@ -200,54 +194,40 @@ export function MapV2Page({ mode }: { mode: 'visitor' | 'admin' }) {
       )}
       {visitorMode ? (
         <>
-          <button
-            type="button"
-            onClick={locate}
-            aria-label="Locate me"
-            className="visitor-raise pointer-events-auto absolute right-3 z-20 inline-flex size-11 items-center justify-center rounded-full bg-blue-800 text-white shadow-md"
-          >
-            <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="3" />
-              <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
-            </svg>
-          </button>
-          <div
-            ref={sheetRef}
-            className="absolute inset-x-0 bottom-0 z-20 max-h-[46vh] overflow-y-auto pb-[max(0.5rem,env(safe-area-inset-bottom))]"
-          >
-            <section aria-label="Destinations and navigation" className="mx-auto w-full max-w-lg overflow-hidden rounded-t-3xl bg-white shadow-lg ring-1 ring-black/10">
-              <DestinationSearch
-                categories={categories}
-                showClosed={showClosed}
-                position={phase === 'available' ? position : null}
-                notice={{
-                  text: `${locationExplanation.title}. ${locationExplanation.detail}`,
-                  poorAccuracy: locationExplanation.poorAccuracy,
-                }}
-                alert={baseline.status === 'error' ? baseline.error : null}
-                onRoute={handleRoute}
-                onNavigatingChange={setGuideActive}
-                onListOpenChange={setDestinationsOpen}
-              />
-              {guideActive || !destinationsOpen ? null : (
-                <div className="bg-white px-3 pb-3">
-                  <AttractionFilters
-                    categories={categories}
-                    showClosed={showClosed}
-                    onToggleCategory={(category) =>
-                      setCategories((current) => (current.includes(category) ? current.filter((item) => item !== category) : [...current, category]))
-                    }
-                    onToggleClosed={() => setShowClosed((current) => !current)}
-                  />
-                </div>
-              )}
-            </section>
+          {walk.navigating && walk.instruction ? (
+            <div className="pointer-events-auto absolute inset-x-3 bottom-[max(4.75rem,calc(env(safe-area-inset-bottom)+3.75rem))] z-20 mx-auto flex max-w-lg items-center gap-2 rounded-full bg-white py-1 pr-1 pl-4 shadow-md ring-1 ring-black/10">
+              <p className="min-w-0 flex-1 text-sm font-semibold text-neutral-950">{walk.instruction}</p>
+              <button type="button" onClick={walk.cancel} className="inline-flex min-h-11 shrink-0 items-center rounded-full bg-neutral-900 px-4 text-sm font-semibold text-white">
+                Cancel
+              </button>
+            </div>
+          ) : null}
+          <div className="absolute right-3 bottom-[max(1rem,env(safe-area-inset-bottom))] z-30 flex max-w-[min(18rem,calc(100%-5rem))] flex-col items-end gap-2">
+            {locationBubble ? (
+              <p
+                className={`pointer-events-none rounded-2xl px-3 py-2 text-sm font-medium shadow-md ring-1 ring-black/10 ${locationExplanation.poorAccuracy ? 'bg-amber-50 text-amber-950' : 'bg-white text-neutral-950'}`}
+                role="alert"
+              >
+                {locationExplanation.title}. {locationExplanation.detail}
+              </p>
+            ) : null}
+            <button
+              type="button"
+              onClick={locate}
+              aria-label="Locate me"
+              className="pointer-events-auto inline-flex size-11 items-center justify-center rounded-full bg-blue-800 text-white shadow-md"
+            >
+              <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="3" />
+                <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+              </svg>
+            </button>
           </div>
         </>
       ) : null}
-      <AttractionLayer map={map} visitor={visitorMode} categories={categories} showClosed={showClosed} />
-      {visitorMode ? <RouteLayer map={map} geometry={routeGeometry} fitToken={routeFitToken} /> : null}
-      <AttractionDetails map={map} enabled={!editing} visitor={visitorMode} />
+      <AttractionLayer map={map} visitor={visitorMode} categories={visitorCategories} showClosed={false} />
+      {visitorMode ? <RouteLayer map={map} geometry={routeGeometry} fitToken={routeFitToken} clipRing={zooRing} /> : null}
+      <AttractionDetails map={map} enabled={!editing} visitor={visitorMode} onTravel={visitorMode ? travelTo : undefined} travelNote={visitorMode ? walk.note : null} />
       {import.meta.env.DEV ? <EntranceLayer map={map} active={managingAttractions} placingEnabled={!editing} /> : null}
       <PathAccessLayer
         map={map}

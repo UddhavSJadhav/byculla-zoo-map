@@ -6,7 +6,19 @@ import { availabilityLabel, categoryLabel } from '@/attractions/visitor'
 import { placingEntranceId } from '@/entrances/store'
 import { attractionRegistryLayerIds } from '@/map-v2/attractionRegistryLayer'
 
-export function AttractionDetails({ map, enabled, visitor }: { map: Map | null; enabled: boolean; visitor: boolean }) {
+export function AttractionDetails({
+  map,
+  enabled,
+  visitor,
+  onTravel,
+  travelNote,
+}: {
+  map: Map | null
+  enabled: boolean
+  visitor: boolean
+  onTravel?: (attractionId: string) => void
+  travelNote?: { attractionId: string; text: string } | null
+}) {
   const [attractionIds, setAttractionIds] = useState<string[]>([])
   const attractions = useAttractions()
   const selected = attractionIds
@@ -64,14 +76,33 @@ export function AttractionDetails({ map, enabled, visitor }: { map: Map | null; 
       ) : null}
       <div className="mt-2 space-y-2">
         {selected.map((attraction) => (
-          <AttractionSummary key={attraction.id} attraction={attraction} numbered={shared} visitor={visitor} />
+          <AttractionSummary
+            key={attraction.id}
+            attraction={attraction}
+            numbered={shared}
+            visitor={visitor}
+            onTravel={onTravel}
+            travelNote={travelNote?.attractionId === attraction.id ? travelNote.text : null}
+          />
         ))}
       </div>
     </section>
   )
 }
 
-function AttractionSummary({ attraction, numbered, visitor }: { attraction: AttractionRecord; numbered: boolean; visitor: boolean }) {
+function AttractionSummary({
+  attraction,
+  numbered,
+  visitor,
+  onTravel,
+  travelNote,
+}: {
+  attraction: AttractionRecord
+  numbered: boolean
+  visitor: boolean
+  onTravel?: (attractionId: string) => void
+  travelNote?: string | null
+}) {
   const category = categoryLabel(attraction.category)
   const status = attractionStatuses.find((item) => item.id === attraction.status)?.label ?? attraction.status
   const availability = availabilityLabel(attraction.status)
@@ -91,6 +122,20 @@ function AttractionSummary({ attraction, numbered, visitor }: { attraction: Attr
       )}
       {attraction.description ? <p className="mt-1 text-sm text-neutral-800">{attraction.description}</p> : null}
       {attraction.status === 'reference' ? <p className="mt-1 text-[11px] text-neutral-500">This listing does not confirm the exhibit is open.</p> : null}
+      {visitor && attraction.status === 'open' && onTravel ? (
+        <button
+          type="button"
+          onClick={() => onTravel(attraction.id)}
+          className="mt-2 inline-flex min-h-11 items-center rounded-full bg-blue-800 px-4 text-sm font-semibold text-white"
+        >
+          Travel here
+        </button>
+      ) : null}
+      {travelNote ? (
+        <p className="mt-2 text-sm text-neutral-800" role="status">
+          {travelNote}
+        </p>
+      ) : null}
     </div>
   )
 }

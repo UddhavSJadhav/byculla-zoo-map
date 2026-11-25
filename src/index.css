@@ -51,7 +51,7 @@ body {
 
 .map-v2-visitor .maplibregl-ctrl-bottom-right,
 .map-v2-visitor .visitor-raise {
-  bottom: var(--visitor-sheet-offset, 14rem);
+  bottom: max(1rem, env(safe-area-inset-bottom));
 }
 
 .map-v2-editing .maplibregl-ctrl-top-left {
