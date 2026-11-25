@@ -33,7 +33,7 @@ export function RouteLayer({
           type: 'line',
           source: 'visitor-route',
           layout: { 'line-cap': 'round', 'line-join': 'round' },
-          paint: { 'line-color': '#1d4e89', 'line-width': 5, 'line-opacity': 0.95 },
+          paint: { 'line-color': '#1a73e8', 'line-width': 5, 'line-opacity': 0.95 },
         })
         return
       }
