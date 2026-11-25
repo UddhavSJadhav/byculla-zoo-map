@@ -147,6 +147,7 @@ const zooLayers = [
     id: 'zoo-trees',
     type: 'circle',
     source: 'trees',
+    layout: { visibility: 'none' },
     paint: {
       'circle-color': '#3e7a46',
       'circle-stroke-color': '#f4ead7',
@@ -208,6 +209,7 @@ function label(id: string, source: MapLayerId, minzoom: number, maxzoom: number,
     layout: {
       'text-field': ['get', 'name'],
       'text-font': labelFont,
+      ...(source === 'trees' ? { visibility: 'none' as const } : {}),
       'text-size': source === 'trees' ? 11 : 13,
       'text-optional': optional,
       'text-padding': source === 'trees' ? 1 : 4,

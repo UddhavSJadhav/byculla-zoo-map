@@ -26,7 +26,7 @@ import { describeOffline, nextLocationNotice, visitorLocationExplanation } from 
 import { attractionCategories, type AttractionCategory } from '@/attractions/types'
 import { mapLayerIds, type MapLayerId } from '@/types/map-v2'
 
-const initialLayers = Object.fromEntries(mapLayerIds.map((id) => [id, true])) as Record<MapLayerId, boolean>
+const initialLayers = Object.fromEntries(mapLayerIds.map((id) => [id, id !== 'trees'])) as Record<MapLayerId, boolean>
 
 export function MapV2Page({ mode }: { mode: 'visitor' | 'admin' }) {
   const { phase, position, message, fixCount, requestLocation, wait, errorKind } = useGeolocation()
