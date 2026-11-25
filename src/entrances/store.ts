@@ -1,13 +1,21 @@
 import type { Feature, FeatureCollection, Geometry, Position } from 'geojson'
 import { getEntranceBaselineRecords, loadEntranceBaseline } from './baseline.ts'
 import { sameCoordinate } from './connection.ts'
+import { nextEntranceId } from './ids.ts'
 import type { EntranceRecord, EntranceStorage } from './types.ts'
 
 const storageKey = 'zoo-map.entrances.v1'
 
+interface StoredEntrance {
+  attractionId: string
+  coordinates: [number, number]
+  verified: boolean
+  lastEdited: string
+}
+
 interface StoredEntrances {
-  version: 1
-  entrances: Record<string, { coordinates: [number, number]; verified: boolean; lastEdited: string }>
+  version: 1 | 2
+  entrances: Record<string, StoredEntrance | { coordinates: [number, number]; verified: boolean; lastEdited: string }>
   removed?: string[]
 }
 
@@ -16,21 +24,28 @@ interface LocalEntrances {
   removed: string[]
 }
 
+interface Placement {
+  entranceId: string
+  attractionId: string
+}
+
 type Listener = () => void
 
 export interface EntranceStore {
   subscribe(listener: Listener): () => void
   list(): readonly EntranceRecord[]
-  get(attractionId: string): EntranceRecord | null
-  set(attractionId: string, coordinates: Position): string | null
-  verify(attractionId: string, verified: boolean): string | null
-  remove(attractionId: string): string | null
+  listForAttraction(attractionId: string): readonly EntranceRecord[]
+  get(entranceId: string): EntranceRecord | null
+  set(entranceId: string, coordinates: Position, attractionId?: string): string | null
+  verify(entranceId: string, verified: boolean): string | null
+  remove(entranceId: string): string | null
   reload(): void
   exportCollection(): FeatureCollection<Geometry | null>
   importCollection(raw: unknown, knownAttractionIds: ReadonlySet<string>): { applied: number; warnings: string[] }
-  beginPlacement(attractionId: string): void
+  beginPlacement(attractionId: string, entranceId?: string): void
   cancelPlacement(): void
   placingId(): string | null
+  placingAttractionId(): string | null
 }
 
 export function createEntranceStore(
@@ -41,7 +56,7 @@ export function createEntranceStore(
   let cachedLocal: LocalEntrances | null = null
   let cachedRecords: Record<string, EntranceRecord> | null = null
   let cachedList: readonly EntranceRecord[] | null = null
-  let placingId: string | null = null
+  let placing: Placement | null = null
 
   function emit() {
     cachedList = null
@@ -76,7 +91,16 @@ export function createEntranceStore(
     cachedList = null
     if (Object.keys(cachedLocal.entrances).length === 0 && cachedLocal.removed.length === 0) storage.removeItem(storageKey)
     else {
-      const stored: StoredEntrances = { version: 1, entrances: cachedLocal.entrances }
+      const entrances: Record<string, StoredEntrance> = {}
+      for (const [id, record] of Object.entries(cachedLocal.entrances)) {
+        entrances[id] = {
+          attractionId: record.attractionId,
+          coordinates: record.coordinates,
+          verified: record.verified,
+          lastEdited: record.lastEdited,
+        }
+      }
+      const stored: StoredEntrances = { version: 2, entrances }
       if (cachedLocal.removed.length > 0) stored.removed = cachedLocal.removed
       storage.setItem(storageKey, JSON.stringify(stored))
     }
@@ -92,49 +116,57 @@ export function createEntranceStore(
     },
     list() {
       if (cachedList) return cachedList
-      cachedList = Object.values(view()).sort((left, right) => left.attractionId.localeCompare(right.attractionId))
+      cachedList = Object.values(view()).sort((left, right) => {
+        const byAttraction = left.attractionId.localeCompare(right.attractionId)
+        return byAttraction !== 0 ? byAttraction : left.id.localeCompare(right.id)
+      })
       return cachedList
     },
-    get(attractionId) {
-      return view()[attractionId] ?? null
+    listForAttraction(attractionId) {
+      return this.list().filter((entrance) => entrance.attractionId === attractionId)
     },
-    set(attractionId, coordinates) {
-      const id = attractionId.trim()
-      if (!id) return 'Choose an attraction before placing an entrance.'
+    get(entranceId) {
+      return view()[entranceId] ?? null
+    },
+    set(entranceId, coordinates, attractionId) {
+      const id = entranceId.trim()
+      if (!id) return 'Choose an entrance before placing it.'
       const point = coordinate(coordinates)
       if (!point) return 'The entrance must be a longitude and latitude.'
       const current = view()[id]
+      const attraction = (attractionId ?? current?.attractionId ?? id).trim()
+      if (!attraction) return 'Choose an attraction before placing an entrance.'
       const verified = current && sameCoordinate(current.coordinates, point) ? current.verified : false
       const local = readLocal()
-      if (placingId === id) placingId = null
+      if (placing?.entranceId === id) placing = null
       write({
         entrances: {
           ...local.entrances,
-          [id]: { attractionId: id, coordinates: point, verified, lastEdited: new Date().toISOString() },
+          [id]: { id, attractionId: attraction, coordinates: point, verified, lastEdited: new Date().toISOString() },
         },
         removed: local.removed.filter((item) => item !== id),
       })
       return null
     },
-    verify(attractionId, verified) {
-      const current = view()[attractionId]
+    verify(entranceId, verified) {
+      const current = view()[entranceId]
       if (!current) return 'Place an entrance before verifying it.'
       const local = readLocal()
       write({
-        entrances: { ...local.entrances, [attractionId]: { ...current, verified, lastEdited: new Date().toISOString() } },
-        removed: local.removed.filter((item) => item !== attractionId),
+        entrances: { ...local.entrances, [entranceId]: { ...current, verified, lastEdited: new Date().toISOString() } },
+        removed: local.removed.filter((item) => item !== entranceId),
       })
       return null
     },
-    remove(attractionId) {
-      if (!view()[attractionId]) return 'That attraction has no entrance.'
+    remove(entranceId) {
+      if (!view()[entranceId]) return 'That entrance is not on the map.'
       const local = readLocal()
       const entrances = { ...local.entrances }
-      delete entrances[attractionId]
-      if (placingId === attractionId) placingId = null
+      delete entrances[entranceId]
+      if (placing?.entranceId === entranceId) placing = null
       write({
         entrances,
-        removed: baseline()[attractionId] ? [...local.removed, attractionId] : local.removed.filter((item) => item !== attractionId),
+        removed: baseline()[entranceId] ? [...local.removed, entranceId] : local.removed.filter((item) => item !== entranceId),
       })
       return null
     },
@@ -150,7 +182,7 @@ export function createEntranceStore(
         type: 'FeatureCollection',
         features: this.list().map((entrance) => ({
           type: 'Feature' as const,
-          id: entrance.attractionId,
+          id: entrance.id,
           geometry: { type: 'Point' as const, coordinates: entrance.coordinates },
           properties: {
             attractionId: entrance.attractionId,
@@ -177,24 +209,32 @@ export function createEntranceStore(
           warnings.push(result)
           continue
         }
-        next[result.attractionId] = result
-        removed.delete(result.attractionId)
+        next[result.id] = result
+        removed.delete(result.id)
         applied += 1
       }
       if (applied === 0) return { applied, warnings: warnings.length > 0 ? warnings : ['Nothing in that file matched an attraction.'] }
       write({ entrances: next, removed: [...removed] })
       return { applied, warnings }
     },
-    beginPlacement(attractionId) {
-      placingId = attractionId
+    beginPlacement(attractionId, entranceId) {
+      const id = attractionId.trim()
+      if (!id) return
+      placing = {
+        attractionId: id,
+        entranceId: entranceId?.trim() || nextEntranceId(id, view()),
+      }
       emit()
     },
     cancelPlacement() {
-      placingId = null
+      placing = null
       emit()
     },
     placingId() {
-      return placingId
+      return placing?.entranceId ?? null
+    },
+    placingAttractionId() {
+      return placing?.attractionId ?? null
     },
   }
 }
@@ -203,13 +243,19 @@ function parse(raw: string | null): LocalEntrances {
   if (!raw) return { entrances: {}, removed: [] }
   try {
     const parsed = JSON.parse(raw) as StoredEntrances
-    if (!parsed || parsed.version !== 1 || !parsed.entrances || typeof parsed.entrances !== 'object') return { entrances: {}, removed: [] }
+    if (!parsed || (parsed.version !== 1 && parsed.version !== 2) || !parsed.entrances || typeof parsed.entrances !== 'object') {
+      return { entrances: {}, removed: [] }
+    }
     const entrances: Record<string, EntranceRecord> = {}
     for (const [id, record] of Object.entries(parsed.entrances)) {
-      const point = record && coordinate(record.coordinates)
+      if (!record || typeof record !== 'object') continue
+      const point = coordinate(record.coordinates)
       if (!point) continue
+      const attractionId =
+        'attractionId' in record && typeof record.attractionId === 'string' && record.attractionId ? record.attractionId : id
       entrances[id] = {
-        attractionId: id,
+        id,
+        attractionId,
         coordinates: point,
         verified: record.verified === true,
         lastEdited: typeof record.lastEdited === 'string' ? record.lastEdited : new Date(0).toISOString(),
@@ -238,7 +284,14 @@ function recordFromFeature(feature: Feature<Geometry | null>, knownAttractionIds
   if (!feature.geometry || feature.geometry.type !== 'Point') return `Skipped ${attractionId}: an entrance must be a Point.`
   const point = coordinate(feature.geometry.coordinates)
   if (!point) return `Skipped ${attractionId}: the entrance coordinate is not a longitude and latitude.`
+  const id =
+    typeof feature.id === 'string' && feature.id
+      ? feature.id
+      : typeof properties.id === 'string' && properties.id
+        ? properties.id
+        : attractionId
   return {
+    id,
     attractionId,
     coordinates: point,
     verified: properties.verified === true,
@@ -280,20 +333,24 @@ export function listEntrances() {
   return entrances.list()
 }
 
-export function getEntrance(attractionId: string) {
-  return entrances.get(attractionId)
+export function listEntrancesForAttraction(attractionId: string) {
+  return entrances.listForAttraction(attractionId)
 }
 
-export function setEntrance(attractionId: string, coordinates: Position) {
-  return entrances.set(attractionId, coordinates)
+export function getEntrance(entranceId: string) {
+  return entrances.get(entranceId)
 }
 
-export function verifyEntrance(attractionId: string, verified: boolean) {
-  return entrances.verify(attractionId, verified)
+export function setEntrance(entranceId: string, coordinates: Position, attractionId?: string) {
+  return entrances.set(entranceId, coordinates, attractionId)
 }
 
-export function removeEntrance(attractionId: string) {
-  return entrances.remove(attractionId)
+export function verifyEntrance(entranceId: string, verified: boolean) {
+  return entrances.verify(entranceId, verified)
+}
+
+export function removeEntrance(entranceId: string) {
+  return entrances.remove(entranceId)
 }
 
 export function reloadEntrances() {
@@ -308,8 +365,8 @@ export function importEntrances(raw: unknown, knownAttractionIds: ReadonlySet<st
   return entrances.importCollection(raw, knownAttractionIds)
 }
 
-export function beginEntrancePlacement(attractionId: string) {
-  entrances.beginPlacement(attractionId)
+export function beginEntrancePlacement(attractionId: string, entranceId?: string) {
+  entrances.beginPlacement(attractionId, entranceId)
 }
 
 export function cancelEntrancePlacement() {
@@ -318,4 +375,8 @@ export function cancelEntrancePlacement() {
 
 export function placingEntranceId() {
   return entrances.placingId()
+}
+
+export function placingAttractionId() {
+  return entrances.placingAttractionId()
 }

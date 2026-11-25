@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Marker, type Map, type MapMouseEvent } from 'maplibre-gl'
 import { useAttractions } from '@/components/map-v2/attractions/useAttractions'
 import { entranceReadiness } from '@/entrances/connection'
-import { placingEntranceId, setEntrance } from '@/entrances/store'
+import { placingAttractionId, placingEntranceId, setEntrance } from '@/entrances/store'
 import { usePaths } from '@/components/map-v2/paths/usePaths'
 import { visitorWalkingGraph } from '@/routing/visitorGraph'
 import { useEntrances, useEntrancePlacement } from '@/components/map-v2/entrances/useEntrances'
@@ -19,11 +19,16 @@ export function EntranceLayer({ map, active, placingEnabled }: { map: Map | null
     const markers = entrances.map((entrance) => {
       const attraction = attractions.find((item) => item.id === entrance.attractionId)
       const readiness = entranceReadiness(entrance, graph)
+      const siblings = entrances.filter((item) => item.attractionId === entrance.attractionId)
+      const index = siblings.findIndex((item) => item.id === entrance.id) + 1
       const element = document.createElement('button')
       element.type = 'button'
       element.className = 'entrance-marker'
-      element.textContent = 'E'
-      element.setAttribute('aria-label', `${attraction ? `${attraction.exhibitNumber}. ${attraction.name}` : entrance.attractionId} entrance`)
+      element.textContent = siblings.length > 1 ? String(index) : 'E'
+      element.setAttribute(
+        'aria-label',
+        `${attraction ? `${attraction.exhibitNumber}. ${attraction.name}` : entrance.attractionId} entrance${siblings.length > 1 ? ` ${index}` : ''}`,
+      )
       element.style.width = '22px'
       element.style.height = '22px'
       element.style.borderRadius = '999px'
@@ -37,7 +42,7 @@ export function EntranceLayer({ map, active, placingEnabled }: { map: Map | null
       const marker = new Marker({ element, anchor: 'center', draggable: true }).setLngLat(entrance.coordinates).addTo(map)
       marker.on('dragend', () => {
         const lngLat = marker.getLngLat()
-        setEntrance(entrance.attractionId, [lngLat.lng, lngLat.lat])
+        setEntrance(entrance.id, [lngLat.lng, lngLat.lat], entrance.attractionId)
       })
       return marker
     })
@@ -55,7 +60,8 @@ export function EntranceLayer({ map, active, placingEnabled }: { map: Map | null
       if (placingEntranceId() !== placingId) return
       const target = event.originalEvent.target
       if (target instanceof Element && target.closest('.entrance-marker')) return
-      setEntrance(placingId, [event.lngLat.lng, event.lngLat.lat])
+      const attractionId = placingAttractionId() ?? placingId
+      setEntrance(placingId, [event.lngLat.lng, event.lngLat.lat], attractionId)
     }
     map.on('click', onClick)
     return () => {

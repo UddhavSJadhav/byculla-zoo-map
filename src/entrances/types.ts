@@ -1,4 +1,5 @@
 export interface EntranceRecord {
+  id: string
   attractionId: string
   coordinates: [number, number]
   verified: boolean

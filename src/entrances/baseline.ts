@@ -38,7 +38,7 @@ export function parseEntranceBaseline(raw: unknown, knownAttractionIds: Readonly
   const next: Record<string, EntranceRecord> = {}
   for (const feature of collection.features) {
     const record = recordFromFeature(feature, knownAttractionIds)
-    if (record) next[record.attractionId] = record
+    if (record) next[record.id] = record
   }
   return next
 }
@@ -51,7 +51,14 @@ function recordFromFeature(feature: Feature<Geometry | null>, knownAttractionIds
   if (!feature.geometry || feature.geometry.type !== 'Point') return null
   const point = coordinate(feature.geometry.coordinates)
   if (!point) return null
+  const id =
+    typeof feature.id === 'string' && feature.id
+      ? feature.id
+      : typeof properties.id === 'string' && properties.id
+        ? properties.id
+        : attractionId
   return {
+    id,
     attractionId,
     coordinates: point,
     verified: properties.verified === true,

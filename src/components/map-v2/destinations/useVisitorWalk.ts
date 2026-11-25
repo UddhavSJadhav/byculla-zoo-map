@@ -3,7 +3,9 @@ import type { LineString, Position } from 'geojson'
 import { useAttractions } from '@/components/map-v2/attractions/useAttractions'
 import { useEntrances } from '@/components/map-v2/entrances/useEntrances'
 import { usePaths } from '@/components/map-v2/paths/usePaths'
-import { destinationReadiness, destinationStatusDetail, destinationStatusLabel } from '@/destinations/readiness'
+import { chooseEntrance } from '@/destinations/chooseEntrance'
+import { destinationStatusDetail, destinationStatusLabel } from '@/destinations/readiness'
+import { entrancesForAttraction } from '@/entrances/ids'
 import type { RouteSegment } from '@/routing/graph'
 import { advanceNavigation, type NavigationSession, type VisitorGuidance } from '@/routing/guidance'
 import { visitorWalkingGraph } from '@/routing/visitorGraph'
@@ -21,6 +23,7 @@ export function useVisitorWalk(position: GeoPosition | null, onRoute: (update: R
   const entrances = useEntrances()
   const paths = usePaths()
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [lockedEntranceId, setLockedEntranceId] = useState<string | null>(null)
   const [followGps, setFollowGps] = useState(false)
   const [navigating, setNavigating] = useState(false)
   const [acceptedFix, setAcceptedFix] = useState<RouteFix | null>(null)
@@ -30,7 +33,7 @@ export function useVisitorWalk(position: GeoPosition | null, onRoute: (update: R
     [paths],
   )
   const selected = attractions.find((attraction) => attraction.id === selectedId) ?? null
-  const entrance = selected ? (entrances.find((item) => item.attractionId === selected.id) ?? null) : null
+  const candidates = selected ? entrancesForAttraction(entrances, selected.id) : []
   const longitude = position?.longitude
   const latitude = position?.latitude
   const live = longitude != null && latitude != null ? ([longitude, latitude] as Position) : null
@@ -48,18 +51,25 @@ export function useVisitorWalk(position: GeoPosition | null, onRoute: (update: R
     setAcceptedFix(null)
   }
   const start = fix?.position ?? null
-  const readiness = selected
-    ? destinationReadiness({
+  const chosen = selected
+    ? chooseEntrance({
+        entrances: candidates,
         status: selected.status,
         geometry: selected.geometry,
-        entrance,
         start,
         graph: visitorWalkingGraph(),
         network,
       })
     : null
+  const entrance =
+    lockedEntranceId != null
+      ? (candidates.find((item) => item.id === lockedEntranceId) ?? chosen?.entrance ?? null)
+      : (chosen?.entrance ?? null)
+  const readiness = chosen?.readiness ?? null
   const walking = navigating || (usingGps && readiness?.state === 'ready')
   if (walking && !navigating) setNavigating(true)
+  if (walking && entrance && lockedEntranceId !== entrance.id) setLockedEntranceId(entrance.id)
+  if (!walking && lockedEntranceId !== null && !followGps) setLockedEntranceId(null)
   const advanced = walking && selected
     ? advanceNavigation({
         session: navigation,
@@ -99,6 +109,7 @@ export function useVisitorWalk(position: GeoPosition | null, onRoute: (update: R
 
   const travel = (attractionId: string): 'need-location' | 'checking' => {
     setSelectedId(attractionId)
+    setLockedEntranceId(null)
     setNavigating(false)
     setNavigation(null)
     setFollowGps(true)
@@ -109,6 +120,7 @@ export function useVisitorWalk(position: GeoPosition | null, onRoute: (update: R
     setNavigating(false)
     setFollowGps(false)
     setNavigation(null)
+    setLockedEntranceId(null)
     setSelectedId(null)
   }
 

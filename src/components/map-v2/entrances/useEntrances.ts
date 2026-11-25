@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react'
-import { listEntrances, placingEntranceId, subscribeEntrances } from '@/entrances/store'
+import { listEntrances, placingAttractionId, placingEntranceId, subscribeEntrances } from '@/entrances/store'
 
 export function useEntrances() {
   return useSyncExternalStore(subscribeEntrances, listEntrances, listEntrances)
@@ -7,4 +7,8 @@ export function useEntrances() {
 
 export function useEntrancePlacement() {
   return useSyncExternalStore(subscribeEntrances, placingEntranceId, placingEntranceId)
+}
+
+export function useEntrancePlacementAttraction() {
+  return useSyncExternalStore(subscribeEntrances, placingAttractionId, placingAttractionId)
 }

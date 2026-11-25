@@ -19,6 +19,22 @@
     },
     {
       "type": "Feature",
+      "id": "exhibit-1-2",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8346866,
+          18.977901
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-1",
+        "verified": true,
+        "lastEdited": "2026-11-25T06:53:56.198Z"
+      }
+    },
+    {
+      "type": "Feature",
       "id": "exhibit-10",
       "geometry": {
         "type": "Point",
@@ -71,14 +87,14 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          72.83919227021455,
-          18.97898536551853
+          72.839005,
+          18.9789915
         ]
       },
       "properties": {
         "attractionId": "exhibit-13",
         "verified": true,
-        "lastEdited": "2026-11-25T05:06:00.000Z"
+        "lastEdited": "2026-11-25T06:53:56.198Z"
       }
     },
     {
@@ -87,14 +103,30 @@
       "geometry": {
         "type": "Point",
         "coordinates": [
-          72.8379777,
-          18.9790248
+          72.8380005,
+          18.9791345
         ]
       },
       "properties": {
         "attractionId": "exhibit-14",
         "verified": true,
-        "lastEdited": "2026-11-25T04:55:04.755Z"
+        "lastEdited": "2026-11-25T06:53:56.198Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-14-2",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8373356,
+          18.9791219
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-14",
+        "verified": true,
+        "lastEdited": "2026-11-25T06:53:56.198Z"
       }
     },
     {
@@ -243,6 +275,22 @@
     },
     {
       "type": "Feature",
+      "id": "exhibit-6-2",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.8366818,
+          18.9778589
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-6",
+        "verified": true,
+        "lastEdited": "2026-11-25T06:53:56.198Z"
+      }
+    },
+    {
+      "type": "Feature",
       "id": "exhibit-7",
       "geometry": {
         "type": "Point",
@@ -255,6 +303,22 @@
         "attractionId": "exhibit-7",
         "verified": true,
         "lastEdited": "2026-11-25T04:55:04.755Z"
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "exhibit-7-2",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          72.837479,
+          18.9780214
+        ]
+      },
+      "properties": {
+        "attractionId": "exhibit-7",
+        "verified": true,
+        "lastEdited": "2026-11-25T06:53:56.198Z"
       }
     }
   ]
